@@ -7,26 +7,101 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Departments Create Karein
+        // Foreign key checks disable kar dete hain taaki truncate mein koi error na aaye
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Task::truncate();
+        User::truncate();
+        Department::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // 1. Official ECL Departments Hierarchy Create Karein
         $departmentsData = [
-            ['Manpower', 'MAN'],
-            ['HRD Office', 'HRD'],
-            ['Finance', 'FIN'],
-            ['Safety', 'SAFE'],
-            ['Operations', 'OPS'],
-            ['AI & Tech', 'TECH']
+            [1, null, 'Chairman-cum-Managing Director', 'CCMD'],
+            
+            // Level 2 (Under CCMD)
+            [2, 1, 'GM (T&MS)/TS to CMD', 'GM/TS'],
+            [3, 1, 'CVO', 'CVO'],
+            [4, 1, 'HoD (Internal Audit)', 'HOD'],
+            [5, 1, 'Company Secretary', 'CS'],
+            [6, 1, 'Director (Technical) Operations', 'DTO'],
+            [7, 1, 'Director (Technical) Project & Planning', 'DTPP'],
+            [8, 1, 'Director (HR)', 'DHR'],
+            [9, 1, 'Director (Finance)', 'DOF'],
+            
+            // Level 3 (Under Director HR - id: 8)
+            [10, 8, 'IR', 'IR'],
+            [11, 8, 'Executive Establishment', 'EE'],
+            [12, 8, 'Security', 'SEC'],
+            [13, 8, 'Manpower', 'MP'],
+            [14, 8, 'Legal', 'LEG'],
+            [15, 8, 'Administration', 'ADM'],
+            [16, 8, 'Welfare and CSR', 'WCSR'],
+            [17, 8, 'RTI Cell', 'RTI'],
+            [18, 8, 'NIDAN Cell', 'NIDAN'],
+            [19, 8, 'CMS', 'CMS'],
+            [20, 8, 'HRD', 'HRD'],
+            [21, 8, 'Pension', 'PEN'],
+            [22, 8, 'PR', 'PR'],
+            [23, 8, 'Rajbhasha', 'RJB'],
+            [24, 8, 'WBE', 'WBE'],
+            [25, 8, 'Employment', 'EMP'],
+
+            // Level 3 (Under Director Finance - id: 9)
+            [26, 9, 'Finance', 'FIN'],
+            [27, 9, 'Systems', 'STM'],
+            [28, 9, 'PAD', 'PAD'],
+            [29, 9, 'Electronics and Telecommunication', 'E&T'],
+
+            // Director (Technical) Operations (id: 6) ke under aane wale departments
+            [30, 6, 'Salanpur', 'SAL'],
+            [31, 6, 'Satgram - Sripur', 'STS'],
+            [32, 6, 'Sodepur', 'SOD'],
+            [33, 6, 'Mugma', 'MUG'],
+            [34, 6, 'S.P. Mines', 'SPM'],
+            [35, 6, 'Rajmahal', 'RJM'],
+            [36, 6, 'Kajora', 'KAJ'],
+            [37, 6, 'Production / Coal Stock Management / Blasting', 'PRD'],
+            [38, 6, 'E&M', 'ENM'],
+            [39, 6, 'MM/Purchase/Stores', 'MMS'],
+            [40, 6, 'Excavation', 'EXC'],
+            [41, 6, 'Safety & Rescue', 'SAF'],
+            [42, 6, 'QC', 'QC'],
+            [43, 6, 'M&S', 'MNS'],
+            [44, 6, 'Survey', 'SRV'],
+
+            // Director (Technical) Project & Planning (id: 7) ke under aane wale departments
+            [45, 7, 'Bankola', 'BNK'],
+            [46, 7, 'Jhanjra', 'JHJ'],
+            [47, 7, 'Kenda', 'KEN'],
+            [48, 7, 'Kunustoria', 'KUN'],
+            [49, 7, 'Pandaveswar', 'PAN'],
+            [50, 7, 'Sonepur Bazari', 'SPB'],
+            [51, 7, 'Project & Planning', 'PNP'],
+            [52, 7, 'CMC', 'CMC'],
+            [53, 7, 'Geology & New Initiatives', 'GNI'],
+            [54, 7, 'Environment & Forest', 'ENF'],
+            [55, 7, 'Civil', 'CVL'],
+            [56, 7, 'LRE', 'LRE'],
+            [57, 7, 'Industrial Engineering', 'INE'],
+            [58, 7, 'New Coal Block', 'NCB']
         ];
 
         $depts = [];
-        foreach ($departmentsData as [$name, $code]) {
-            $depts[$name] = Department::firstOrCreate(
-                ['name' => $name], 
-                ['code' => $code]
+        foreach ($departmentsData as [$id, $parentId, $name, $code]) {
+            $depts[$name] = Department::updateOrCreate(
+                ['id' => $id],
+                [
+                    'parent_id' => $parentId,
+                    'name' => $name,
+                    'code' => $code,
+                    'is_active' => 1
+                ]
             );
         }
 
@@ -37,29 +112,29 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Admin',
                 'password' => Hash::make('Admin@123'),
                 'role' => 'admin',
-                'department_id' => $depts['HRD Office']->id,
+                'department_id' => $depts['HRD']->id ?? 20,
                 'designation' => 'Management Admin',
                 'status' => 'active'
             ]
         );
 
-        // 3. Employees Create Karein
+        // 3. Employees / Users Create Karein
         $employees = [
-            ['Rahul Sharma', 'rahul@ecl.com', 'Manpower', 'Employee', 'AI & Automation Developer'],
-            ['Amit Kumar', 'amit@ecl.com', 'Finance', 'Admin', 'Finance Administrator'],
-            ['Priya Sen', 'priya@ecl.com', 'AI & Tech', 'Employee', 'Software Developer'],
+            ['Rahul Sharma', 'rahul@ecl.com', 'Manpower', 'employee', 'AI & Automation Developer'],
+            ['Amit Kumar', 'amit@ecl.com', 'Finance', 'admin', 'Finance Administrator'],
+            ['Priya Sen', 'priya@ecl.com', 'Electronics and Telecommunication', 'employee', 'Software Developer'],
             ['Sandip Bhandari', 'sandip@ecl.gov.in', 'Operations', 'employee', 'AI & Jetpack Compose Developer'],
         ];
 
         $users = [];
-        foreach ($employees as [$name, $email, $dept, $role, $designation]) {
+        foreach ($employees as [$name, $email, $deptName, $role, $designation]) {
             $users[$email] = User::updateOrCreate(
                 ['email' => $email],
                 [
                     'name' => $name,
                     'password' => Hash::make('ChangeMe@123'),
                     'role' => strtolower($role),
-                    'department_id' => $depts[$dept]->id,
+                    'department_id' => $depts[$deptName]->id ?? null,
                     'designation' => $designation,
                     'phone' => $email === 'sandip@ecl.gov.in' ? '+91 9876543210' : null,
                     'branch' => $email === 'sandip@ecl.gov.in' ? 'Asansol Corporate HQ' : null,
@@ -70,10 +145,11 @@ class DatabaseSeeder extends Seeder
 
         // 4. Sample Tasks Create Karein
         Task::updateOrCreate(
-            ['title' => 'Database Setup', 'assigned_to' => $users['sandip@ecl.gov.in']->id],
+            ['title' => 'Database Setup'],
             [
                 'description' => 'Configure MySQL and connect with Laravel backend.',
-                'department_id' => $depts['Operations']->id,
+                'assigned_to' => $users['sandip@ecl.gov.in']->id ?? 1,
+                'department_id' => $depts['Systems']->id ?? 27,
                 'created_by' => $admin->id,
                 'status' => 'Pending',
                 'due_date' => '2026-08-05'
@@ -81,47 +157,14 @@ class DatabaseSeeder extends Seeder
         );
 
         Task::updateOrCreate(
-            ['title' => 'UI Bug Fixing', 'assigned_to' => $users['sandip@ecl.gov.in']->id],
-            [
-                'description' => 'Fix alignment issues on login & dashboard screens.',
-                'department_id' => $depts['AI & Tech']->id,
-                'created_by' => $admin->id,
-                'status' => 'Pending',
-                'due_date' => '2026-08-18'
-            ]
-        );
-
-        Task::updateOrCreate(
-            ['title' => 'API Integration', 'assigned_to' => $users['sandip@ecl.gov.in']->id],
-            [
-                'description' => 'Connect REST endpoints with Jetpack Compose UI.',
-                'department_id' => $depts['AI & Tech']->id,
-                'created_by' => $admin->id,
-                'status' => 'Pending',
-                'due_date' => '2026-08-22'
-            ]
-        );
-
-        Task::updateOrCreate(
-            ['title' => 'Safety Audit Report', 'assigned_to' => $users['rahul@ecl.com']->id],
+            ['title' => 'Safety Audit Report'],
             [
                 'description' => 'Prepare manpower safety audit report.',
-                'department_id' => $depts['Manpower']->id,
+                'assigned_to' => $users['rahul@ecl.com']->id ?? 1,
+                'department_id' => $depts['Safety & Rescue']->id ?? 41,
                 'created_by' => $admin->id,
                 'status' => 'In Progress',
                 'due_date' => '2026-08-20'
-            ]
-        );
-
-        Task::updateOrCreate(
-            ['title' => 'Payroll Verification', 'assigned_to' => $users['amit@ecl.com']->id],
-            [
-                'description' => 'Verify monthly payroll records.',
-                'department_id' => $depts['Finance']->id,
-                'created_by' => $admin->id,
-                'status' => 'Completed',
-                'due_date' => '2026-08-01',
-                'completed_at' => now()
             ]
         );
     }

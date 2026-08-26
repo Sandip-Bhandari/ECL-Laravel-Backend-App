@@ -9,13 +9,15 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
+// Baaki saare routes waise hi rahenge jo aapne likhe hain...
+
+// Admin/System द्वारा User (Employee) create karke Department se link karne ka route
+Route::post('/admin/create-user', [AuthController::class, 'createUser']);
+
 // Public Auth Routes (OTP Login System for Employees & Password Login for Admin)
 Route::prefix('auth')->group(function () {
-    // Naye OTP routes employee ke liye
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-    
-    // Admin login waisa hi rahega
     Route::post('/admin-login', [AuthController::class, 'adminLogin']);
 });
 
@@ -27,46 +29,43 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
 
-    // --- GENERAL TASK ROUTES ---
+    // --- GENERAL & SHARED TASK ROUTES ---
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::get('/tasks/{task}', [TaskController::class, 'show']);
 
-    // --- NOTIFICATION ROUTES ---
+    // --- NOTIFICATION ROUTES (Sabke liye common) ---
     Route::post('/device-token', [NotificationController::class, 'storeDeviceToken']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
-    // --- ADMIN ONLY ROUTES ---
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index']);
-        
-        Route::post('/departments', [DepartmentController::class, 'store']);
+    // --- DASHBOARD (Admin & Managers ke liye) ---
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::post('/departments', [DepartmentController::class, 'store']);
 
-        // Task Management
-        Route::post('/admin/tasks', [TaskController::class, 'store']);
-        Route::get('/admin/tasks/{task}', [TaskController::class, 'show']);      
-        Route::put('/admin/tasks/{task}', [TaskController::class, 'update']);     
-        Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy']); 
-        
-        // Admin Chat / Comments Routes
-        Route::get('/admin/tasks/{task}/comments', [CommentController::class, 'index']);
-        Route::post('/admin/tasks/{task}/comments', [CommentController::class, 'store']);
+    // --- TASK MANAGEMENT (Admin + Managers jo task dete hain) ---
+    // Yahan employee role wale access nahi karenge, baaki admin aur managers kar sakenge
+    Route::post('/admin/tasks', [TaskController::class, 'store']);
+    Route::get('/admin/tasks/{task}', [TaskController::class, 'show']);      
+    Route::put('/admin/tasks/{task}', [TaskController::class, 'update']);     
+    Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy']); 
+    
+    // Chat / Comments for Admin/Manager side
+    Route::get('/admin/tasks/{task}/comments', [CommentController::class, 'index']);
+    Route::post('/admin/tasks/{task}/comments', [CommentController::class, 'store']);
 
-        // Employee Management
-        Route::get('/employees', [EmployeeController::class, 'index']);
-        Route::post('/employees', [EmployeeController::class, 'store']);
-        Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-        Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
-    });
+    // --- EMPLOYEE MANAGEMENT (Subordinates ko add/manage karne ke liye) ---
+    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::post('/employees', [EmployeeController::class, 'store']);
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
 
-    // --- EMPLOYEE ONLY ROUTES ---
-    Route::middleware('role:employee')->group(function () {
-        // Employee tasks
-        Route::get('/employee/tasks', [TaskController::class, 'getEmployeeTasks']);
-        Route::put('/employee/tasks/{task}', [TaskController::class, 'updateMyTask']);
-        
-        // Employee Chat / Comments Routes
-        Route::get('/employee/tasks/{task}/comments', [CommentController::class, 'index']);
-        Route::post('/employee/tasks/{task}/comments', [CommentController::class, 'store']);
-    });
+    // --- EMPLOYEE SELF-ROUTES (Jab koi Manager bhi apne senior se mile task ko dekhega, ya pure employee) ---
+    Route::get('/employee/tasks', [TaskController::class, 'getEmployeeTasks']);
+    Route::put('/employee/tasks/{task}', [TaskController::class, 'updateMyTask']);
+    
+    // Employee Chat / Comments Routes (Self task chat)
+    Route::get('/employee/tasks/{task}/comments', [CommentController::class, 'index']);
+    Route::post('/employee/tasks/{task}/comments', [CommentController::class, 'store']);
+
+    Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree']);
 });

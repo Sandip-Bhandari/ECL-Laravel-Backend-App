@@ -12,9 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('phone')->nullable()->unique()->after('email');
-            $table->string('otp')->nullable()->after('phone');
-            $table->timestamp('otp_expires_at')->nullable()->after('otp');
+            // Phone line yahan se hata di hai kyunki woh pehle se table mein hai
+            if (!Schema::hasColumn('users', 'otp')) {
+                $table->string('otp')->nullable();
+            }
+
+            if (!Schema::hasColumn('users', 'otp_expires_at')) {
+                $table->timestamp('otp_expires_at')->nullable();
+            }
         });
     }
 
@@ -24,7 +29,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['phone', 'otp', 'otp_expires_at']);
+            $table->dropColumn(['otp', 'otp_expires_at']);
         });
     }
 };

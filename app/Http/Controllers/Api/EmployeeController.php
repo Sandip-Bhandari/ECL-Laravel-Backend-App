@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -13,7 +14,15 @@ class EmployeeController extends Controller
 {
     public function index(Request $request)
     {
+        $currentUser = auth()->user();
         $q = User::orderBy('name');
+
+        // 🟢 Hierarchy Filter: Agar user Super Admin / Top Management nahi hai, toh sirf apne direct subordinates dekhega
+        if ($currentUser && $currentUser->role !== 'super_admin') {
+            // Manager/Admin sirf apne children/subordinates ko dekh sakega
+            $q->where('parent_id', $currentUser->id);
+        }
+
         if ($request->filled('search')) {
             $q->where(fn($x) => $x->where('name', 'like', '%' . $request->search . '%')->orWhere('email', 'like', '%' . $request->search . '%'));
         }
@@ -26,6 +35,7 @@ class EmployeeController extends Controller
         if ($request->filled('status')) {
             $q->where('status', $request->status);
         }
+
         return response()->json($q->get()->map(fn($u) => $this->payload($u)));
     }
 
@@ -40,18 +50,20 @@ class EmployeeController extends Controller
                 'password' => 'nullable',
                 'phone' => 'nullable|string|max:30',
                 'designation' => 'nullable|string|max:255',
-                'department' => 'nullable|string|max:255', // 🟢 Direct department name string
+                'department' => 'nullable|string|max:255',
                 'branch' => 'nullable|string|max:255',
                 'role' => ['required', Rule::in(['admin', 'employee'])]
             ]);
 
-            // Default password set kar rahe hain
-            $data['password']  = Hash::make('Default@123'); 
-            $data['status']    = 'active';
+            $data['password'] = Hash::make('Default@123'); 
+            $data['status'] = 'active';
 
-            // 🟢 department_id ki jagah seedha department string/name save kar rahe hain taaki column missing error na aaye
-            // Agar request me department_id aa raha ho toh use bhi handle kar lete hain safety ke liye
-            if ($request->filled('department_id') && empty($data['department'])) {
+            // 🟢 Naye user ka parent_id current logged-in user ban jayega (Chain System)
+            $data['parent_id'] = auth()->id();
+
+            if ($request->filled('department')) {
+                $data['department'] = $request->input('department');
+            } elseif ($request->filled('department_id')) {
                 $deptInput = $request->department_id;
                 if (is_numeric($deptInput)) {
                     $dept = Department::find($deptInput);
@@ -59,17 +71,17 @@ class EmployeeController extends Controller
                 } else {
                     $data['department'] = $deptInput;
                 }
+            } else {
+                $data['department'] = null;
             }
             
-            // Unset extra/non-database keys if any
             unset($data['department_id']);
 
-            // User database mein create kar rahe hain
             $u = User::create($data);
-            Log::info('Employee Created Successfully ID: ' . $u->id);
+            Log::info('Employee Created Successfully ID: ' . $u->id . ' under Parent ID: ' . $data['parent_id']);
 
             return response()->json([
-                'message' => 'Staff profile created successfully.', 
+                'message' => 'Staff profile created successfully under your chain.', 
                 'user' => $this->payload($u)
             ], 201);
 
@@ -84,6 +96,13 @@ class EmployeeController extends Controller
 
     public function update(Request $request, User $employee)
     {
+        $currentUser = auth()->user();
+
+        // 🟢 Security Check: Ensure manager can only update their own subordinate
+        if ($currentUser->role !== 'super_admin' && $employee->parent_id !== $currentUser->id) {
+            return response()->json(['message' => 'Unauthorized: You can only modify your direct subordinates.'], 403);
+        }
+
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($employee->id)],
@@ -96,7 +115,9 @@ class EmployeeController extends Controller
             'status' => ['sometimes', Rule::in(['active', 'inactive'])]
         ]);
 
-        if ($request->filled('department_id') && !isset($data['department'])) {
+        if ($request->filled('department')) {
+            $data['department'] = $request->input('department');
+        } elseif ($request->filled('department_id')) {
             $deptInput = $request->department_id;
             if (is_numeric($deptInput)) {
                 $dept = Department::find($deptInput);
@@ -105,6 +126,7 @@ class EmployeeController extends Controller
                 $data['department'] = $deptInput;
             }
         }
+        
         unset($data['department_id']);
 
         if (array_key_exists('password', $data)) { 
@@ -120,9 +142,17 @@ class EmployeeController extends Controller
 
     public function destroy(User $employee) 
     { 
-        if ($employee->id === auth()->id()) {
+        $currentUser = auth()->user();
+
+        if ($employee->id === $currentUser->id) {
             return response()->json(['message' => 'You cannot delete your own account.'], 422); 
         }
+
+        // 🟢 Security Check: Manager can only delete their own subordinate
+        if ($currentUser->role !== 'super_admin' && $employee->parent_id !== $currentUser->id) {
+            return response()->json(['message' => 'Unauthorized: You can only remove your direct subordinates.'], 403);
+        }
+
         $employee->delete(); 
         return response()->json(['message' => 'Staff profile removed.']); 
     }
@@ -134,10 +164,11 @@ class EmployeeController extends Controller
             'name' => $u->name,
             'email' => $u->email,
             'role' => $u->role,
-            'phone' => $u->phone ?? null, // 🟢 Phone enabled
+            'phone' => $u->phone ?? null,
             'designation' => $u->designation ?? null,
-            'department' => $u->department ?? null, // 🟢 Department string returned
-            'status' => $u->status ?? 'active'
+            'department' => $u->department ?? null,
+            'status' => $u->status ?? 'active',
+            'parent_id' => $u->parent_id ?? null
         ]; 
     }
 }
