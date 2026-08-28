@@ -10,13 +10,14 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable(); // 🟢 Phone yahan properly define kar diya
+            $table->string('phone')->nullable();
             $table->string('password');
             $table->string('role')->default('employee');
+            $table->boolean('is_dual_role')->default(false); // 🟢 Yeh naya column add kar diya gaya hai
             $table->string('department')->nullable();
-            $table->string('status')->default('active'); // Agar status bhi use kar rahe hain
-            $table->timestamps();
+            $table->string('status')->default('active');
             $table->string('designation')->nullable();
+            $table->timestamps();
         });
     }
 

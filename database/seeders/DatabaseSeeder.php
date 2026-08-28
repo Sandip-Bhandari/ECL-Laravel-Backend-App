@@ -105,66 +105,16 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 2. Admin User Create Karein
-        $admin = User::updateOrCreate(
+        // 2. Fixed Master Admin User Create Karein
+        User::updateOrCreate(
             ['email' => 'admin@ecl.gov.in'],
             [
-                'name' => 'Admin',
+                'name' => 'Master Admin',
                 'password' => Hash::make('Admin@123'),
                 'role' => 'admin',
-                'department_id' => $depts['HRD']->id ?? 20,
-                'designation' => 'Management Admin',
+                'department_id' => $depts['CCMD']->id ?? 1,
+                'designation' => 'CCMD',
                 'status' => 'active'
-            ]
-        );
-
-        // 3. Employees / Users Create Karein
-        $employees = [
-            ['Rahul Sharma', 'rahul@ecl.com', 'Manpower', 'employee', 'AI & Automation Developer'],
-            ['Amit Kumar', 'amit@ecl.com', 'Finance', 'admin', 'Finance Administrator'],
-            ['Priya Sen', 'priya@ecl.com', 'Electronics and Telecommunication', 'employee', 'Software Developer'],
-            ['Sandip Bhandari', 'sandip@ecl.gov.in', 'Operations', 'employee', 'AI & Jetpack Compose Developer'],
-        ];
-
-        $users = [];
-        foreach ($employees as [$name, $email, $deptName, $role, $designation]) {
-            $users[$email] = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'name' => $name,
-                    'password' => Hash::make('ChangeMe@123'),
-                    'role' => strtolower($role),
-                    'department_id' => $depts[$deptName]->id ?? null,
-                    'designation' => $designation,
-                    'phone' => $email === 'sandip@ecl.gov.in' ? '+91 9876543210' : null,
-                    'branch' => $email === 'sandip@ecl.gov.in' ? 'Asansol Corporate HQ' : null,
-                    'status' => 'active'
-                ]
-            );
-        }
-
-        // 4. Sample Tasks Create Karein
-        Task::updateOrCreate(
-            ['title' => 'Database Setup'],
-            [
-                'description' => 'Configure MySQL and connect with Laravel backend.',
-                'assigned_to' => $users['sandip@ecl.gov.in']->id ?? 1,
-                'department_id' => $depts['Systems']->id ?? 27,
-                'created_by' => $admin->id,
-                'status' => 'Pending',
-                'due_date' => '2026-08-05'
-            ]
-        );
-
-        Task::updateOrCreate(
-            ['title' => 'Safety Audit Report'],
-            [
-                'description' => 'Prepare manpower safety audit report.',
-                'assigned_to' => $users['rahul@ecl.com']->id ?? 1,
-                'department_id' => $depts['Safety & Rescue']->id ?? 41,
-                'created_by' => $admin->id,
-                'status' => 'In Progress',
-                'due_date' => '2026-08-20'
             ]
         );
     }

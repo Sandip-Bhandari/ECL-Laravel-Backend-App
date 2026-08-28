@@ -9,17 +9,11 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 
-// Baaki saare routes waise hi rahenge jo aapne likhe hain...
+// --- PUBLIC AUTH ROUTE (Direct Login without OTP) ---
+Route::post('/login', [AuthController::class, 'login']);
 
-// Admin/System द्वारा User (Employee) create karke Department se link karne ka route
+// Admin/System द्वारा User (Employee) create karke Department से link karne ka route (Agar public/protected jo rakhna ho)
 Route::post('/admin/create-user', [AuthController::class, 'createUser']);
-
-// Public Auth Routes (OTP Login System for Employees & Password Login for Admin)
-Route::prefix('auth')->group(function () {
-    Route::post('/send-otp', [AuthController::class, 'sendOtp']);
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
-    Route::post('/admin-login', [AuthController::class, 'adminLogin']);
-});
 
 // Public Department Route
 Route::get('/departments', [DepartmentController::class, 'index']);
@@ -43,7 +37,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/departments', [DepartmentController::class, 'store']);
 
     // --- TASK MANAGEMENT (Admin + Managers jo task dete hain) ---
-    // Yahan employee role wale access nahi karenge, baaki admin aur managers kar sakenge
     Route::post('/admin/tasks', [TaskController::class, 'store']);
     Route::get('/admin/tasks/{task}', [TaskController::class, 'show']);      
     Route::put('/admin/tasks/{task}', [TaskController::class, 'update']);     
@@ -59,7 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
     Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
 
-    // --- EMPLOYEE SELF-ROUTES (Jab koi Manager bhi apne senior se mile task ko dekhega, ya pure employee) ---
+    // --- EMPLOYEE SELF-ROUTES ---
     Route::get('/employee/tasks', [TaskController::class, 'getEmployeeTasks']);
     Route::put('/employee/tasks/{task}', [TaskController::class, 'updateMyTask']);
     

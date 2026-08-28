@@ -19,7 +19,6 @@ class EmployeeController extends Controller
 
         // 🟢 Hierarchy Filter: Agar user Super Admin / Top Management nahi hai, toh sirf apne direct subordinates dekhega
         if ($currentUser && $currentUser->role !== 'super_admin') {
-            // Manager/Admin sirf apne children/subordinates ko dekh sakega
             $q->where('parent_id', $currentUser->id);
         }
 
@@ -52,11 +51,20 @@ class EmployeeController extends Controller
                 'designation' => 'nullable|string|max:255',
                 'department' => 'nullable|string|max:255',
                 'branch' => 'nullable|string|max:255',
-                'role' => ['required', Rule::in(['admin', 'employee'])]
+                // 🟢 Updated Rule: 'admin,employee' dual role ko bhi validate karne ke liye allow kiya gaya hai
+                'role' => ['required', Rule::in(['admin', 'employee', 'admin,employee'])],
+                'is_dual_role' => 'nullable|boolean'
             ]);
 
             $data['password'] = Hash::make('Default@123'); 
             $data['status'] = 'active';
+
+            // Agar role 'admin,employee' hai toh automatic is_dual_role true set ho jayega
+            if (isset($data['role']) && $data['role'] === 'admin,employee') {
+                $data['is_dual_role'] = true;
+            } else {
+                $data['is_dual_role'] = $request->input('is_dual_role', false);
+            }
 
             // 🟢 Naye user ka parent_id current logged-in user ban jayega (Chain System)
             $data['parent_id'] = auth()->id();
@@ -111,9 +119,14 @@ class EmployeeController extends Controller
             'designation' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
             'branch' => 'nullable|string|max:255',
-            'role' => ['sometimes', Rule::in(['admin', 'employee'])],
-            'status' => ['sometimes', Rule::in(['active', 'inactive'])]
+            'role' => ['sometimes', Rule::in(['admin', 'employee', 'admin,employee'])],
+            'status' => ['sometimes', Rule::in(['active', 'inactive'])],
+            'is_dual_role' => 'nullable|boolean'
         ]);
+
+        if (isset($data['role']) && $data['role'] === 'admin,employee') {
+            $data['is_dual_role'] = true;
+        }
 
         if ($request->filled('department')) {
             $data['department'] = $request->input('department');
@@ -168,7 +181,9 @@ class EmployeeController extends Controller
             'designation' => $u->designation ?? null,
             'department' => $u->department ?? null,
             'status' => $u->status ?? 'active',
-            'parent_id' => $u->parent_id ?? null
+            'parent_id' => $u->parent_id ?? null,
+            // App ke liye is_dual_role bhi payload mein bhej diya gaya hai taaki UI par switch button show ho sake
+            'is_dual_role' => (bool) ($u->is_dual_role ?? ($u->role === 'admin,employee'))
         ]; 
     }
 }
