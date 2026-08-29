@@ -117,5 +117,39 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active'
             ]
         );
+
+    $notebookUsers = [
+            ['name' => 'Sandip', 'email' => 'Sandip@ecl.gov.in', 'password' => 'Sandip123', 'role' => 'employee', 'department' => 'HRD', 'designation' => 'Executive'],
+            ['name' => 'Sanjay', 'email' => 'Sanjay@ecl.gov.in', 'password' => 'Sanjay123', 'role' => 'admin', 'department' => 'Administration', 'designation' => 'Manager'],
+            ['name' => 'Sitaram', 'email' => 'Sitaram@ecl.gov.in', 'password' => 'Sitaram123', 'role' => 'admin,employee', 'department' => 'HRD', 'designation' => 'Clerk'],
+            ['name' => 'Bishal', 'email' => 'Bishal@ecl.gov.in', 'password' => 'Bishal123', 'role' => 'admin', 'department' => 'Administration', 'designation' => 'Executive'],
+            ['name' => 'Ankit', 'email' => 'Ankit@ecl.gov.in', 'password' => 'Ankit123', 'role' => 'employee', 'department' => 'Welfare and CSR', 'designation' => 'Non-Executive'],
+            ['name' => 'Sachin', 'email' => 'Sachin@ecl.gov.in', 'password' => 'Sachin123', 'role' => 'employee', 'department' => 'NIDAN Cell', 'designation' => 'Clerk'],
+            ['name' => 'Bibek', 'email' => 'Bibek@ecl.gov.in', 'password' => 'Bibek123', 'role' => 'employee', 'department' => 'PR', 'designation' => 'Executive'],
+            ['name' => 'Vivek', 'email' => 'Vivek@ecl.gov.in', 'password' => 'Vivek123', 'role' => 'employee', 'department' => 'Finance', 'designation' => 'Officer'],
+            ['name' => 'Karan', 'email' => 'Karan@ecl.gov.in', 'password' => 'Karan123', 'role' => 'employee', 'department' => 'Manpower', 'designation' => 'Non-Executive'],
+            ['name' => 'Rahul', 'email' => 'Rahul@ecl.gov.in', 'password' => 'Rahul123', 'role' => 'employee', 'department' => 'Rajbhasha', 'designation' => 'Clerk'],
+            ['name' => 'Sonu', 'email' => 'Sonu@ecl.gov.in', 'password' => 'Sonu123', 'role' => 'employee', 'department' => 'CMS', 'designation' => 'Executive'],
+            ['name' => 'Sandhya', 'email' => 'Sandhya@ecl.gov.in', 'password' => 'Sandhya123', 'role' => 'admin,employee', 'department' => 'Systems', 'designation' => 'Manager'],
+            ['name' => 'Nandani', 'email' => 'Nandani@ecl.gov.in', 'password' => 'Nandani123', 'role' => 'employee', 'department' => 'Legal', 'designation' => 'Officer'],
+        ];
+
+        foreach ($notebookUsers as $uData) {
+            $isDualRole = str_contains($uData['role'], ',') ? 1 : 0;
+
+            User::updateOrCreate(
+                ['email' => $uData['email']],
+                [
+                    'name' => $uData['name'],
+                    'password' => Hash::make($uData['password']),
+                    'role' => $uData['role'],
+                    'is_dual_role' => $isDualRole,
+                    'phone' => '+91 9876543210',
+                    'department' => $uData['department'],
+                    'designation' => $uData['designation'],
+                    'status' => 'active'
+                ]
+            );
+        }
     }
 }

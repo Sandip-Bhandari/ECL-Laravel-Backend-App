@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // users table me is_dual_role column add kar rahe hain bina data delete kiye
-            $table->boolean('is_dual_role')->default(false)->after('role');
+            // Check kar rahe hain ki column pehle se toh nahi hai
+            if (!Schema::hasColumn('users', 'is_dual_role')) {
+                $table->boolean('is_dual_role')->default(false)->after('role');
+            }
         });
     }
 
@@ -23,7 +25,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_dual_role');
+            if (Schema::hasColumn('users', 'is_dual_role')) {
+                $table->dropColumn('is_dual_role');
+            }
         });
     }
 };

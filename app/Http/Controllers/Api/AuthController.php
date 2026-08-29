@@ -7,42 +7,39 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
     /**
-     * Direct Login (Email, Password & Role ke sath)
+     * Direct Login (Android App Compatible)
      */
     public function login(Request $request)
     {
+        // Sirf email aur password validate karein, role ko optional ya flexible rakhein
         $data = $request->validate([
             'email'    => 'required|email',
             'password' => 'required|string',
-            'role'     => ['required', Rule::in(['employee', 'admin', 'admin,employee'])]
         ]);
         
-        // Query to find user based on email and matching role (including dual-role support)
-        $user = User::where('email', $data['email'])
-                    ->where(function($q) use ($data) {
-                        $q->where('role', $data['role'])
-                          ->orWhere('role', 'admin,employee'); // Dual-role users can login via any role selection
-                    })
-                    ->first();
+        // Database se user dhoondhein
+        $user = User::where('email', $data['email'])->first();
         
-        // Check if user exists and password is correct
+        // Password check karein
         if (!$user || !Hash::check($data['password'], (string) $user->password)) {
-            throw ValidationException::withMessages(['email' => 'Invalid email, password, or role.']);
+            throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
 
-        // Generate token based on selected role
-        $tokenName = $data['role'] === 'admin' ? 'android-admin' : 'android-employee';
+        // Token name generate karein
+        $tokenName = str_contains($user->role, 'admin') ? 'android-admin' : 'android-employee';
         $token = $user->createToken($tokenName)->plainTextToken;
         
+        // Android app ke code ke mutabiq keys return karein ('token', 'role', 'has_admin_access')
         return response()->json([
-            'message' => 'Login successful.',
-            'token'   => $token,
-            'user'    => $this->userPayload($user)
+            'message'          => 'Login successful.',
+            'token'            => $token,
+            'role'             => $user->role,
+            'has_admin_access' => str_contains($user->role, 'admin') || str_contains($user->role, 'manager'),
+            'user'             => $this->userPayload($user)
         ], 200);
     }
 

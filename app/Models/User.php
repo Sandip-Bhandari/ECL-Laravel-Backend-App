@@ -12,16 +12,17 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
+        'parent_id', 
         'name',
         'email',
         'password',
         'phone',
-        'designation',
-        'department_id', // String wali 'department' ki jagah foreign key ID
-        'branch',
-        'role',
+        'department', 
         'status',
-        'parent_id'
+        'role',
+        'is_dual_role',
+        'designation',
+        'branch',
     ];
 
     protected $hidden = [
@@ -36,10 +37,11 @@ class User extends Authenticatable
 
     // --- RELATIONSHIPS ---
 
-    // 1. Department relation (Har user kisi ek department se belong karega)
+    
+    // 1. Department relation (Explicitly foreign key 'department' specify kar rahe hain)
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'department', 'id');
     }
 
     // 2. Is user ka boss / parent kaun hai

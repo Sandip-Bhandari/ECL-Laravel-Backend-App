@@ -46,7 +46,7 @@ class EmployeeController extends Controller
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'nullable',
+                'password' => 'nullable|string',
                 'phone' => 'nullable|string|max:30',
                 'designation' => 'nullable|string|max:255',
                 'department' => 'nullable|string|max:255',
@@ -56,7 +56,10 @@ class EmployeeController extends Controller
                 'is_dual_role' => 'nullable|boolean'
             ]);
 
-            $data['password'] = Hash::make('Default@123'); 
+            // 🟢 Fix: Agar app se password bheja hai toh woh use ho, warna 'Default@123'
+            $passwordInput = $request->filled('password') ? $request->input('password') : 'Default@123';
+            $data['password'] = Hash::make($passwordInput);
+            
             $data['status'] = 'active';
 
             // Agar role 'admin,employee' hai toh automatic is_dual_role true set ho jayega
