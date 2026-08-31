@@ -11,11 +11,11 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Direct Login (Android App Compatible)
+     * Direct Login (Android App Compatible with Dual Roles)
      */
     public function login(Request $request)
     {
-        // Sirf email aur password validate karein, role ko optional ya flexible rakhein
+        // Sirf email aur password validate karein
         $data = $request->validate([
             'email'    => 'required|email',
             'password' => 'required|string',
@@ -29,16 +29,36 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
 
-        // Token name generate karein
-        $tokenName = str_contains($user->role, 'admin') ? 'android-admin' : 'android-employee';
-        $token = $user->createToken($tokenName)->plainTextToken;
+        // Roles ko array mein convert karein (e.g., "admin,employee" -> ['admin', 'employee'])
+        $roles = array_map('trim', explode(',', $user->role));
+        $isAdmin = in_array('admin', $roles);
+        $isEmployee = in_array('employee', $roles);
+        $isDualRole = count($roles) > 1 || ($user->is_dual_role ?? false);
+
+        // Tokens generate karein
+        $adminToken = null;
+        $employeeToken = null;
+
+        if ($isAdmin) {
+            $adminToken = $user->createToken('android-admin')->plainTextToken;
+        }
+
+        if ($isEmployee || !$isAdmin) {
+            $employeeToken = $user->createToken('android-employee')->plainTextToken;
+        }
+
+        // Primary default token (agar dual role hai toh admin token pehle preference rakhega, warna employee)
+        $primaryToken = $adminToken ?? $employeeToken;
         
-        // Android app ke code ke mutabiq keys return karein ('token', 'role', 'has_admin_access')
+        // JSON Response return karein
         return response()->json([
             'message'          => 'Login successful.',
-            'token'            => $token,
-            'role'             => $user->role,
-            'has_admin_access' => str_contains($user->role, 'admin') || str_contains($user->role, 'manager'),
+            'token'            => $primaryToken,          // Fallback / Primary token
+            'admin_token'      => $adminToken,            // Dual-role admin token
+            'employee_token'   => $employeeToken,         // Dual-role employee token
+            'role'             => $user->role,           
+            'has_admin_access' => $isAdmin || str_contains($user->role, 'manager'),
+            'is_dual_role'     => $isDualRole,           
             'user'             => $this->userPayload($user)
         ], 200);
     }
@@ -56,15 +76,18 @@ class AuthController extends Controller
 
     private function userPayload(User $u): array 
     { 
+        $roles = array_map('trim', explode(',', $u->role));
+        $isDualRole = count($roles) > 1 || ($u->is_dual_role ?? ($u->role === 'admin,employee'));
+
         return [
             'id'           => $u->id,
             'name'         => $u->name,
             'email'        => $u->email,
-            'role'         => $u->role,
+            'role'         => $u->role,          
             'phone'        => $u->phone ?? null,
             'designation'  => $u->designation ?? null,
             'department'   => is_object($u->department) ? $u->department?->name : ($u->department ?? null),
-            'is_dual_role' => (bool) ($u->is_dual_role ?? ($u->role === 'admin,employee'))
+            'is_dual_role' => (bool) $isDualRole
         ]; 
     }
 }
