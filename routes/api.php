@@ -61,4 +61,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/employee/tasks/{task}/comments', [CommentController::class, 'store']);
 
     Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree']);
+    Route::post('/update-fcm-token', [AuthController::class, 'updateFcmToken']);
 });

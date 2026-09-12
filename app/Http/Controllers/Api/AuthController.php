@@ -15,10 +15,11 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Sirf email aur password validate karein
+        // Email, password, aur optional fcm_token validate karein
         $data = $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
+            'email'     => 'required|email',
+            'password'  => 'required|string',
+            'fcm_token' => 'nullable|string', // App login ke waqt token bhej sakta hai
         ]);
         
         // Database se user dhoondhein
@@ -27,6 +28,11 @@ class AuthController extends Controller
         // Password check karein
         if (!$user || !Hash::check($data['password'], (string) $user->password)) {
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
+        }
+
+        // Agar login ke waqt fcm_token bheja gaya hai toh use update kar dein
+        if (!empty($data['fcm_token'])) {
+            $user->update(['fcm_token' => $data['fcm_token']]);
         }
 
         // Roles ko array mein convert karein (e.g., "admin,employee" -> ['admin', 'employee'])
@@ -56,10 +62,28 @@ class AuthController extends Controller
             'token'            => $primaryToken,          // Fallback / Primary token
             'admin_token'      => $adminToken,            // Dual-role admin token
             'employee_token'   => $employeeToken,         // Dual-role employee token
-            'role'             => $user->role,           
+            'role'             => $user->role,          
             'has_admin_access' => $isAdmin || str_contains($user->role, 'manager'),
-            'is_dual_role'     => $isDualRole,           
+            'is_dual_role'     => $isDualRole,          
             'user'             => $this->userPayload($user)
+        ], 200);
+    }
+
+    /**
+     * Update FCM Token Endpoint (App baad mein bhi token bhej sakta hai)
+     */
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $request->user()->update([
+            'fcm_token' => $request->fcm_token,
+        ]);
+
+        return response()->json([
+            'message' => 'FCM token updated successfully.'
         ], 200);
     }
 

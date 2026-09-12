@@ -9,3 +9,4 @@
 .env.backup
 .env.production
 .phpunit.cache
+.ecl-tms-firebase-adminsdk-fbsvc-e07358a715.json

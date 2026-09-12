@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Kreait\Firebase\Messaging\CloudMessage;
 
 class TaskController extends Controller
 {
@@ -71,72 +72,115 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        $currentUser = $request->user();
+        try {
+            $currentUser = $request->user();
 
-        if ($request->has('department') && !$request->has('department_id')) {
-            $deptName = $request->input('department');
-            $dept = \App\Models\Department::where('name', $deptName)->first();
-            if ($dept) {
-                $request->merge(['department_id' => $dept->id]);
+            // 1. Department Name to ID conversion with safety
+            if ($request->has('department') && !$request->has('department_id')) {
+                $deptName = $request->input('department');
+                $dept = \App\Models\Department::where('name', 'like', '%' . $deptName . '%')->first();
+                if ($dept) {
+                    $request->merge(['department_id' => $dept->id]);
+                } else {
+                    return response()->json([
+                        'message' => "Department '{$deptName}' database mein nahi mila."
+                    ], 422);
+                }
             }
+
+            // 2. Employee Name to ID conversion with safety
+            if ($request->has('assigned_to') && !is_numeric($request->input('assigned_to'))) {
+                $empName = $request->input('assigned_to');
+                $employee = \App\Models\User::where('name', 'like', '%' . $empName . '%')->first();
+                if ($employee) {
+                    $request->merge(['assigned_to' => $employee->id]);
+                } else {
+                    return response()->json([
+                        'message' => "Employee '{$empName}' database mein nahi mila. Kripya sahi naam chunein."
+                    ], 422);
+                }
+            }
+
+            $data = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'department_id' => 'nullable|exists:departments,id',
+                'assigned_to' => 'nullable|exists:users,id',
+                'priority' => ['required', Rule::in(['High', 'Medium', 'Low'])],
+                'status' => ['nullable', Rule::in(['Pending', 'In Progress', 'Approval for Completed', 'Completed'])],
+                'due_date' => 'nullable|date',
+                'attachment' => 'nullable|file|max:10240'
+            ]);
+
+            if (isset($data['assigned_to']) && !in_array($currentUser->role, ['super_admin', 'admin'])) {
+                $isSubordinate = $currentUser->children()->where('id', $data['assigned_to'])->exists();
+                if (!$isSubordinate) {
+                    return response()->json([
+                        'message' => 'Unauthorized: You can only assign tasks to your direct reporting subordinates.'
+                    ], 403);
+                }
+            }
+
+            $attachment = $request->file('attachment'); 
+            unset($data['attachment']);
+
+            $data['created_by'] = $currentUser->id; 
+            $data['status'] = $data['status'] ?? 'Pending';
+
+            $tasksCreated = DB::transaction(function() use ($data, $attachment, $request, $currentUser) {
+                $createdTasks = [];
+                $task = Task::create($data); 
+                
+                if ($attachment) {
+                    $this->saveAttachment($task, $attachment, $currentUser->id);
+                } 
+                
+                if (!empty($data['assigned_to'])) {
+                    AppNotification::create([
+                        'user_id' => $data['assigned_to'],
+                        'task_id' => $task->id,
+                        'title' => 'New Task Assigned',
+                        'message' => 'You have been assigned: ' . $task->title,
+                        'type' => 'task_assigned'
+                    ]);
+
+                    // Send Push Notification
+                    $this->sendPushNotification(
+                        $data['assigned_to'],
+                        'New Task Assigned',
+                        'You have been assigned: ' . $task->title,
+                        [
+                            'task_id' => (string) $task->id, 
+                            'type' => 'task_assigned',
+                            'status' => (string) $task->status,
+                            'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : ''
+                        ]
+                    );
+                }
+
+                $createdTasks[] = $task;
+                return $createdTasks;
+            });
+
+            $primaryTask = $tasksCreated[0] ?? null;
+
+            return response()->json([
+                'message' => 'Task created and assigned successfully.',
+                'task' => $primaryTask ? $this->payload($primaryTask->load(['department', 'assignee', 'creator', 'attachments'])) : null
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation Error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Server Error: ' . $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
+            ], 500);
         }
-
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'department_id' => 'nullable|exists:departments,id',
-            'assigned_to' => 'nullable|exists:users,id',
-            'priority' => ['required', Rule::in(['High', 'Medium', 'Low'])],
-            'status' => ['nullable', Rule::in(['Pending', 'In Progress', 'Completed'])],
-            'due_date' => 'nullable|date_format:Y-m-d',
-            'attachment' => 'nullable|file|max:10240'
-        ]);
-
-        if (isset($data['assigned_to']) && !in_array($currentUser->role, ['super_admin', 'admin'])) {
-            $isSubordinate = $currentUser->children()->where('id', $data['assigned_to'])->exists();
-            if (!$isSubordinate) {
-                return response()->json([
-                    'message' => 'Unauthorized: You can only assign tasks to your direct reporting subordinates.'
-                ], 403);
-            }
-        }
-
-        $attachment = $request->file('attachment'); 
-        unset($data['attachment']);
-
-        $data['created_by'] = $currentUser->id; 
-        $data['status'] = $data['status'] ?? 'Pending';
-
-        $tasksCreated = DB::transaction(function() use ($data, $attachment, $request, $currentUser) {
-            $createdTasks = [];
-
-            $task = Task::create($data); 
-            
-            if ($attachment) {
-                $this->saveAttachment($task, $attachment, $currentUser->id);
-            } 
-            
-            if (!empty($data['assigned_to'])) {
-                AppNotification::create([
-                    'user_id' => $data['assigned_to'],
-                    'task_id' => $task->id,
-                    'title' => 'New Task Assigned',
-                    'message' => 'You have been assigned: ' . $task->title,
-                    'type' => 'task_assigned'
-                ]);
-            }
-
-            $createdTasks[] = $task;
-            
-            return $createdTasks;
-        });
-
-        $primaryTask = $tasksCreated[0] ?? null;
-
-        return response()->json([
-            'message' => 'Task created and assigned successfully within hierarchy.',
-            'task' => $primaryTask ? $this->payload($primaryTask->load(['department', 'assignee', 'creator', 'attachments'])) : null
-        ], 201);
     }
 
     public function update(Request $request, Task $task)
@@ -156,7 +200,7 @@ class TaskController extends Controller
             'department_id' => 'nullable|exists:departments,id',
             'assigned_to' => 'nullable|exists:users,id',
             'priority' => ['sometimes', Rule::in(['High', 'Medium', 'Low'])],
-            'status' => [Rule::in(['Pending', 'In Progress', 'Completed'])],
+            'status' => [Rule::in(['Pending', 'In Progress', 'Approval for Completed', 'Completed'])],
             'due_date' => 'nullable|date_format:Y-m-d',
             'attachment' => 'nullable|file|max:10240'
         ]);
@@ -185,6 +229,21 @@ class TaskController extends Controller
                     'message' => 'You have been assigned: ' . $task->title,
                     'type' => 'task_assigned'
                 ]);
+
+                $freshTask = $task->fresh();
+
+                // Send Push Notification
+                $this->sendPushNotification(
+                    $data['assigned_to'],
+                    'New Task Assigned',
+                    'You have been assigned: ' . $freshTask->title,
+                    [
+                        'task_id' => (string) $freshTask->id, 
+                        'type' => 'task_assigned',
+                        'status' => (string) $freshTask->status,
+                        'due_date' => $freshTask->due_date ? $freshTask->due_date->format('Y-m-d') : ''
+                    ]
+                );
             } 
         });
 
@@ -199,24 +258,39 @@ class TaskController extends Controller
         abort_unless($task->assigned_to === $request->user()->id, 403, 'This task is not assigned to you.');
         
         $data = $request->validate([
-            'status' => [Rule::in(['Pending', 'In Progress', 'Completed'])]
+            'status' => [Rule::in(['Pending', 'In Progress', 'Approval for Completed'])]
         ]);
         
-        $data['completed_at'] = ($data['status'] ?? $task->status) === 'Completed' ? now() : null;
+        $data['completed_at'] = null;
         $task->update($data);
         
         if ($task->creator) {
             AppNotification::create([
                 'user_id' => $task->creator->id,
                 'task_id' => $task->id,
-                'title' => 'Task Status Updated',
-                'message' => $request->user()->name . ' changed "' . $task->title . '" to ' . $task->status . '.',
+                'title' => 'Task Approval Requested',
+                'message' => $request->user()->name . ' requested completion approval for "' . $task->title . '".',
                 'type' => 'task_status'
             ]);
+
+            $freshTask = $task->fresh();
+
+            // Send Push Notification to Creator
+            $this->sendPushNotification(
+                $task->creator->id,
+                'Task Approval Requested',
+                $request->user()->name . ' requested completion approval for "' . $freshTask->title . '".',
+                [
+                    'task_id' => (string) $freshTask->id, 
+                    'type' => 'task_status',
+                    'status' => (string) $freshTask->status,                          
+                    'due_date' => $freshTask->due_date ? $freshTask->due_date->format('Y-m-d') : '' 
+                ]
+            );
         }
 
         return response()->json([
-            'message' => 'Task status updated by employee.',
+            'message' => 'Task status updated to approval requested.',
             'task' => $this->payload($task->fresh(['department', 'assignee']))
         ]);
     }
@@ -230,6 +304,32 @@ class TaskController extends Controller
 
         $task->delete(); 
         return response()->json(['message' => 'Task deleted.']); 
+    }
+
+    private function sendPushNotification(int $userId, string $title, string $body, array $data = []): void
+    {
+        try {
+            $deviceTokens = \App\Models\DeviceToken::where('user_id', $userId)->pluck('device_token')->toArray();
+
+            if (!empty($deviceTokens)) {
+                $messaging = app('firebase.messaging');
+                
+                $stringData = array_map('strval', $data);
+
+                foreach ($deviceTokens as $token) {
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::forDevice($token)
+                        ->withNotification([
+                            'title' => $title,
+                            'body' => $body,
+                        ])
+                        ->withData($stringData);
+
+                    $messaging->send($message);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('FCM Push Error: ' . $e->getMessage());
+        }
     }
 
     private function saveAttachment(Task $task, $file, $userId): void 
