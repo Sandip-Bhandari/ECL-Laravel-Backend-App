@@ -6,14 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaskComment extends Model
 {
-    protected $table = 'task_comments';
+    protected $table = 'messages';
 
-    // 🟢 Yeh dono lines string/custom ID ke liye zaroori hain
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    // 🟢 'id' ko fillable me add kar diya hai
-    protected $fillable = ['id', 'task_id', 'user_id', 'comment'];
+    protected $fillable = ['task_id', 'user_id', 'message'];
 
     public function task() { 
         return $this->belongsTo(Task::class); 

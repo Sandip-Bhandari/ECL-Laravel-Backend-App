@@ -14,38 +14,40 @@ use Kreait\Firebase\Messaging\CloudMessage;
 
 class TaskController extends Controller
 {
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $user = $request->user();
-        $q = Task::with(['department', 'assignee', 'creator', 'comments.user', 'attachments'])->latest();
         
-        // 🟢 Hierarchy & Isolation Rule: Regular employee sees only their assigned tasks
-        if ($user->role === 'employee') {
-            $q->where('assigned_to', $user->id);
-        } 
-        // 🟢 Manager/Admin can view own + subordinates tasks
-        elseif ($user->role === 'manager' || $user->role === 'admin' || $user->role === 'super_admin') {
-            $subordinateIds = $user->children()->pluck('id')->toArray();
-            $allowedUserIds = array_merge([$user->id], $subordinateIds);
-            
-            $q->where(function($query) use ($user, $allowedUserIds) {
-                $query->whereIn('assigned_to', $allowedUserIds)
-                      ->orWhere('created_by', $user->id);
+        $q = Task::with(['department', 'assignee', 'creator', 'comments.user', 'attachments'])
+            ->latest();
+
+        // Agar user Admin ya Super Admin nahi hai, tabhi restriction lagayein
+        if (!in_array($user->role, ['super_admin', 'admin'])) {
+            $q->where(function($query) use ($user) {
+                $query->where('created_by', $user->id)
+                      ->orWhere('assigned_to', $user->id);
             });
         }
 
         if ($request->filled('status')) {
             $q->where('status', $request->status);
         }
+        
         if ($request->filled('department_id')) {
             $q->where('department_id', $request->integer('department_id'));
         }
+        
         if ($request->filled('assigned_to')) {
             $q->where('assigned_to', $request->integer('assigned_to'));
         }
-        if ($request->filled('search')) {
-            $q->where(fn($x) => $x->where('title', 'like', '%' . $request->search . '%')
-                                    ->orWhere('description', 'like', '%' . $request->search . '%'));
+        
+        // Filter for created_by (Includes both created and assigned tasks for that user)
+        if ($request->filled('created_by')) {
+            $userId = $request->integer('created_by');
+            $q->where(function($query) use ($userId) {
+                $query->where('created_by', $userId)
+                      ->orWhere('assigned_to', $userId);
+            });
         }
 
         return response()->json($q->get()->map(fn($t) => $this->payload($t)));
@@ -55,11 +57,13 @@ class TaskController extends Controller
     {
         $user = $request->user();
         
-        // Strictly fetch tasks mapped to the authenticated user's profile ID
         $tasks = Task::with(['department', 'assignee', 'creator', 'comments.user', 'attachments'])
-                    ->where('assigned_to', $user->id)
-                    ->latest()
-                    ->get();
+            ->where(function($query) use ($user) {
+                $query->where('created_by', $user->id)
+                      ->orWhere('assigned_to', $user->id);
+            })
+            ->latest()
+            ->get();
 
         return response()->json($tasks->map(fn($t) => $this->payload($t)));
     }
@@ -73,7 +77,7 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         try {
-            $currentUser = $request->user();
+            $currentUser = $request->user(); 
 
             // 1. Department Name to ID conversion with safety
             if ($request->has('department') && !$request->has('department_id')) {
@@ -127,20 +131,19 @@ class TaskController extends Controller
             $data['created_by'] = $currentUser->id; 
             $data['status'] = $data['status'] ?? 'Pending';
 
-            $tasksCreated = DB::transaction(function() use ($data, $attachment, $request, $currentUser) {
-                $createdTasks = [];
-                $task = Task::create($data); 
+            $task = DB::transaction(function() use ($data, $attachment, $request, $currentUser) {
+                $newTask = Task::create($data); 
                 
                 if ($attachment) {
-                    $this->saveAttachment($task, $attachment, $currentUser->id);
+                    $this->saveAttachment($newTask, $attachment, $currentUser->id);
                 } 
                 
                 if (!empty($data['assigned_to'])) {
                     AppNotification::create([
                         'user_id' => $data['assigned_to'],
-                        'task_id' => $task->id,
+                        'task_id' => $newTask->id,
                         'title' => 'New Task Assigned',
-                        'message' => 'You have been assigned: ' . $task->title,
+                        'message' => 'You have been assigned: ' . $newTask->title,
                         'type' => 'task_assigned'
                     ]);
 
@@ -148,25 +151,22 @@ class TaskController extends Controller
                     $this->sendPushNotification(
                         $data['assigned_to'],
                         'New Task Assigned',
-                        'You have been assigned: ' . $task->title,
+                        'You have been assigned: ' . $newTask->title,
                         [
-                            'task_id' => (string) $task->id, 
+                            'task_id' => (string) $newTask->id, 
                             'type' => 'task_assigned',
-                            'status' => (string) $task->status,
-                            'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : ''
+                            'status' => (string) $newTask->status,
+                            'due_date' => $newTask->due_date ? $newTask->due_date->format('Y-m-d') : ''
                         ]
                     );
                 }
 
-                $createdTasks[] = $task;
-                return $createdTasks;
+                return $newTask;
             });
-
-            $primaryTask = $tasksCreated[0] ?? null;
 
             return response()->json([
                 'message' => 'Task created and assigned successfully.',
-                'task' => $primaryTask ? $this->payload($primaryTask->load(['department', 'assignee', 'creator', 'attachments'])) : null
+                'task' => $this->payload($task->load(['department', 'assignee', 'creator', 'attachments']))
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -283,7 +283,7 @@ class TaskController extends Controller
                 [
                     'task_id' => (string) $freshTask->id, 
                     'type' => 'task_status',
-                    'status' => (string) $freshTask->status,                          
+                    'status' => (string) $freshTask->status,                           
                     'due_date' => $freshTask->due_date ? $freshTask->due_date->format('Y-m-d') : '' 
                 ]
             );
@@ -317,7 +317,7 @@ class TaskController extends Controller
                 $stringData = array_map('strval', $data);
 
                 foreach ($deviceTokens as $token) {
-                    $message = \Kreait\Firebase\Messaging\CloudMessage::forDevice($token)
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $token)
                         ->withNotification([
                             'title' => $title,
                             'body' => $body,

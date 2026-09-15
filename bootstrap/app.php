@@ -20,7 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Unauthenticated.'
+                    'status' => false,
+                    'message' => 'Unauthenticated or Token Expired.'
                 ], 401);
             }
         });

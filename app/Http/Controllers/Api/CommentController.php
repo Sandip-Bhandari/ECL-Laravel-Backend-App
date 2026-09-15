@@ -4,44 +4,53 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\TaskComment;
-use Illuminate\Support\Str;
+use App\Models\Message; // <-- Yeh ensure karein ki yahi model import ho
 
 class CommentController extends Controller
 {
-    // Task ke saare comments/messages fetch karne ke liye
+    // Task ke saare messages fetch karne ke liye (GET API)
     public function index($taskId)
     {
-        $comments = TaskComment::where('task_id', $taskId)
-            ->with('user:id,name') // User ka naam sath me lane ke liye
+        $messages = Message::where('task_id', $taskId)
+            ->with('user:id,name') 
             ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json([
             'status' => true,
-            'data' => $comments
+            'data' => $messages
         ]);
     }
 
-    // Naya comment/message save karne ke liye
+    // Naya message save karne ke liye (POST API)
     public function store(Request $request, $taskId)
     {
-        $request->validate([
-            'comment' => 'required|string',
-        ]);
+        $messageText = $request->input('message') 
+            ?? $request->input('comment') 
+            ?? $request->input('body') 
+            ?? $request->input('text');
+
+        if (empty($messageText)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Message text is empty or missing.'
+            ], 422);
+        }
 
         $user = $request->user();
 
-        $comment = TaskComment::create([
-            'id' => (string) Str::uuid(), // Custom/String ID handle karne ke liye
+        // 'messages' table mein data save hoga
+        $message = Message::create([
             'task_id' => $taskId,
             'user_id' => $user->id,
-            'comment' => $request->comment,
+            'message' => $messageText, 
         ]);
+
+        $message->load('user:id,name');
 
         return response()->json([
             'status' => true,
-            'data' => $comment
+            'data' => $message
         ], 201);
     }
 }
