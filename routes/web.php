@@ -2,12 +2,25 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Status check route (App name will pick from config or direct string)
-Route::get('/', fn () => response()->json([
-    'name' => 'ECL TMS',
-    'status' => 'ok',
-    'api' => '/api',
-]));
+// Redirection to Login
+Route::get('/', function () {
+    return redirect('/login');
+});
+
+// Auth Login Route (Point to auth/login.blade.php)
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+// Admin Dashboard Route
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+});
+
+// Employee Dashboard Route
+Route::get('/employee/dashboard', function () {
+    return view('employee.dashboard');
+});
 
 // Browser par API endpoints ki list dikhane ke liye route
 Route::get('/api-list', function () {
