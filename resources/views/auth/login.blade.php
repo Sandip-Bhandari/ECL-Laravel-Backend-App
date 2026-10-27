@@ -20,10 +20,9 @@
             --brand-primary: #3B2314;
             --brand-primary-hover: #26160C;
             --brand-gold: #D97706;
-            --bg-cream: #FAF7F2;
-            --card-bg: #FFFFFF;
-            --input-bg: #F4EFE6;
-            --border-color: #E2D9CC;
+            --card-glass-bg: rgba(255, 255, 255, 0.88);
+            --input-bg: rgba(244, 239, 230, 0.85);
+            --border-color: rgba(226, 217, 204, 0.9);
             --text-dark: #2B1D14;
             --text-muted: #786C60;
         }
@@ -32,163 +31,157 @@
             box-sizing: border-box;
         }
 
-        body {
-            background-color: var(--bg-cream);
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-            color: var(--text-dark);
-            min-height: 100vh;
+        body, html {
             margin: 0;
-            overflow-x: hidden;
-        }
-
-        .portal-wrapper {
-            min-height: 100vh;
-            display: flex;
+            padding: 0;
             width: 100%;
-        }
-
-        /* ----------------------------------------------------
-           LEFT BRAND & VIDEO PANEL
-        ---------------------------------------------------- */
-        .left-brand-panel {
-            flex: 1.2;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 50px 60px;
-            color: #ffffff;
+            height: 100vh;
             overflow: hidden;
-            background-color: #120A05;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: #1a0f0a;
         }
 
+        /* Fullscreen Background Video */
         .bg-video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            z-index: 1;
-            transform: translate(-50%, -50%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             object-fit: cover;
-            filter: brightness(0.55) contrast(1.15);
+            z-index: 0;
+            pointer-events: none;
+            filter: brightness(0.65) contrast(1.1) saturate(1.05);
         }
 
         .video-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: linear-gradient(
                 135deg, 
-                rgba(35, 20, 10, 0.85) 0%, 
-                rgba(18, 10, 5, 0.75) 50%,
-                rgba(0, 0, 0, 0.90) 100%
+                rgba(15, 8, 4, 0.55) 0%, 
+                rgba(25, 14, 8, 0.40) 50%,
+                rgba(5, 3, 1, 0.65) 100%
             );
-            z-index: 2;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        .left-brand-content {
+        /* App Container Overlay */
+        .portal-container {
             position: relative;
-            z-index: 4;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        /* Top-Left Brand Logo & Title */
+        .top-left-brand {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(13, 7, 4, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 8px 18px 8px 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 12;
         }
 
         .brand-logo-img {
-            max-height: 65px;
+            max-height: 34px;
             width: auto;
-            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
         }
 
-        .brand-badge {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50px;
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            color: #F3E8DC;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .brand-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .brand-hero-title {
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1.15;
-            letter-spacing: -0.5px;
+        .brand-header-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.25;
             color: #FFFFFF;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin: 0;
+            letter-spacing: -0.2px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
         }
 
-        .hero-subtext {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.85);
-            max-width: 480px;
+        .brand-header-title span {
+            color: #FBBF24;
+            font-weight: 800;
         }
 
-        .feature-chip {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-size: 12.5px;
-            font-weight: 500;
-            color: #F3E8DC;
-        }
-
-        .tiger-mascot {
+        /* Bottom Area Container */
+        .bottom-center-area {
             position: absolute;
-            bottom: -10px;
-            right: 40px;
-            z-index: 3;
-            max-width: 250px;
-            height: auto;
-            pointer-events: none;
-            filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.7));
-            animation: floatingMascot 4s ease-in-out infinite;
-        }
-
-        @keyframes floatingMascot {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* ----------------------------------------------------
-           RIGHT FORM PANEL
-        ---------------------------------------------------- */
-        .right-form-panel {
-            flex: 0.8;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 12;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 40px 30px;
-            background: linear-gradient(180deg, var(--bg-cream) 0%, #F3ECDF 100%);
+            gap: 6px;
+        }
+
+        .system-version {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            font-family: monospace;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .system-version a {
+            color: #FBBF24;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .system-version a:hover {
+            color: #FFFFFF;
+            text-decoration: underline;
+        }
+
+        /* Centered Glassmorphic Login Form */
+        .center-form-container {
+            width: 100%;
+            max-width: 400px;
+            z-index: 15;
+            margin: auto;
         }
 
         .web-login-card {
-            width: 100%;
-            max-width: 420px;
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 40px 36px;
-            box-shadow: 0 20px 45px rgba(59, 35, 20, 0.08);
-            border: 1px solid var(--border-color);
+            background: var(--card-glass-bg);
+            border-radius: 20px;
+            padding: 26px 28px 20px 28px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
         }
 
         .icon-circle {
-            width: 54px;
-            height: 54px;
-            background-color: rgba(217, 119, 6, 0.12);
+            width: 44px;
+            height: 44px;
+            background-color: rgba(217, 119, 6, 0.15);
             color: var(--brand-gold);
             border-radius: 50%;
             display: inline-flex;
@@ -198,25 +191,25 @@
 
         .role-btn-group {
             background-color: var(--input-bg);
-            border-radius: 14px;
-            padding: 5px;
+            border-radius: 10px;
+            padding: 3px;
             border: 1px solid var(--border-color);
         }
 
         .role-btn {
             border: none;
-            border-radius: 10px;
-            padding: 10px 14px;
+            border-radius: 8px;
+            padding: 7px 10px;
             font-weight: 600;
             color: var(--text-muted);
             background: transparent;
             width: 50%;
             transition: all 0.25s ease;
-            font-size: 14px;
+            font-size: 12.5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .role-btn.active {
@@ -226,43 +219,43 @@
         }
 
         .form-label-custom {
-            font-size: 12.5px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
         }
 
         .app-input-wrapper {
             background-color: var(--input-bg);
             border: 1.5px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
-            padding: 0 14px;
+            padding: 0 11px;
             transition: all 0.2s ease;
         }
 
         .app-input-wrapper:focus-within {
             background-color: #FFFFFF;
             border-color: var(--brand-primary);
-            box-shadow: 0 0 0 4px rgba(59, 35, 20, 0.1);
+            box-shadow: 0 0 0 3px rgba(59, 35, 20, 0.1);
         }
 
         .app-input-wrapper i {
             color: var(--text-muted);
-            font-size: 16px;
-            margin-right: 10px;
+            font-size: 14px;
+            margin-right: 8px;
         }
 
         .app-input {
             background: transparent;
             border: none;
-            padding: 12px 0;
+            padding: 9px 0;
             color: var(--text-dark);
             width: 100%;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
         }
 
@@ -274,11 +267,11 @@
         .btn-app-dark {
             background-color: var(--brand-primary);
             color: #FFFFFF;
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 10px;
+            padding: 10.5px;
             font-weight: 700;
             border: none;
-            font-size: 15px;
+            font-size: 13.5px;
             transition: all 0.2s ease;
         }
 
@@ -289,109 +282,100 @@
             box-shadow: 0 6px 18px rgba(59, 35, 20, 0.2);
         }
 
-        .btn-app-dark:active {
-            transform: translateY(0);
+        .app-link-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--input-bg);
+            border: 1.5px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 7px 11px;
+            text-decoration: none;
+            color: var(--brand-primary);
+            transition: all 0.3s ease;
         }
 
-        /* ----------------------------------------------------
-           RESPONSIVE BREAKPOINTS
-        ---------------------------------------------------- */
+        .app-link-card:hover {
+            background-color: rgba(234, 245, 234, 0.95);
+            border: 1.5px solid #28A745;
+            color: #155724;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(40, 167, 69, 0.18);
+        }
+
+        .app-link-card:hover i.bi-android2, 
+        .app-link-card:hover i.bi-download {
+            color: #198754 !important;
+        }
+
         @media (max-width: 991px) {
-            .portal-wrapper {
+            body, html {
+                overflow-y: auto;
+                height: auto;
+            }
+            .portal-container {
                 flex-direction: column;
+                height: auto;
+                padding: 20px;
+                justify-content: flex-start;
             }
-            .left-brand-panel {
-                padding: 36px 20px;
-                min-height: 280px;
-                justify-content: center;
-                align-items: center;
-                text-align: center;
-            }
-            .brand-hero-title {
-                font-size: 2.2rem;
-            }
-            .hero-subtext, 
-            .feature-chips-container {
-                display: none;
-            }
-            .tiger-mascot {
-                max-width: 140px;
-                right: 15px;
-                bottom: -10px;
-                opacity: 0.85;
-            }
-            .right-form-panel {
-                padding: 30px 16px;
-                margin-top: -20px;
+            .top-left-brand {
                 position: relative;
-                z-index: 6;
+                top: 0;
+                left: 0;
+                margin-bottom: 15px;
+            }
+            .center-form-container {
+                margin: 15px auto;
+                max-width: 100%;
+            }
+            .bottom-center-area {
+                position: relative;
+                bottom: 0;
+                left: 0;
+                transform: none;
+                margin: 15px auto;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="portal-wrapper">
-        <!-- Left Side: Video Background & Hero Content -->
-        <div class="left-brand-panel">
-            <!-- Background Video -->
-            <video class="bg-video" autoplay loop muted playsinline poster="{{ asset('images/bg.png') }}">
-                <source src="{{ asset('video/TMS_video.mp4') }}" type="video/mp4">
-            </video>
-            
-            <div class="video-overlay"></div>
+    <!-- Fullscreen Background Video -->
+    <video class="bg-video" autoplay loop muted playsinline poster="{{ asset('images/bg.png') }}">
+        <source src="{{ asset('video/TMS_tiger_left.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <div class="video-overlay"></div>
 
-            <!-- Top Header Logo & Badge -->
-            <div class="left-brand-content d-flex justify-content-between align-items-center mb-4">
-                <div class="brand-logo-wrapper">
-                    <img src="{{ asset('images/logo.png') }}" alt="ECL Logo" class="brand-logo-img">
-                </div>
-                <div class="brand-badge d-none d-sm-inline-flex">
-                    <i class="bi bi-shield-check text-warning"></i> Official Internal Portal
-                </div>
-            </div>
-
-            <!-- Hero Title & Features -->
-            <div class="left-brand-content my-auto">
-                <h1 class="brand-hero-title mb-3">
-                    ECL Task Management<br>System
-                </h1>
-                <p class="hero-subtext mb-4 d-none d-md-block">
-                    Centralized platform designed to streamline departmental workflows, track administrative task lifecycles, and enable real-time operational efficiency.
-                </p>
-
-                <div class="d-none d-md-flex flex-wrap gap-2 feature-chips-container">
-                    <span class="feature-chip"><i class="bi bi-shield-lock-fill text-warning me-1"></i> Role-Based Access</span>
-                    <span class="feature-chip"><i class="bi bi-diagram-3-fill text-info me-1"></i> Workflow Management</span>
-                    <span class="feature-chip"><i class="bi bi-speedometer2 text-success me-1"></i> Live Tracking</span>
-                </div>
-            </div>
-
-            <!-- Bottom Footer Text -->
-            <div class="left-brand-content d-flex justify-content-center align-items-center pt-3">
-                <div class="d-flex align-items-center gap-2 text-white-50 small font-monospace tracking-widest">
-                    <span>ENERGY</span> • <span>COMMITMENT</span> • <span>LEADERSHIP</span>
-                </div>
-            </div>
-
-            <!-- Mascot Asset -->
-            <img src="{{ asset('images/Tiger.png') }}" alt="Tiger Engineer Mascot" class="tiger-mascot">
+    <div class="portal-container">
+        <!-- Top-Left Brand Logo & Title -->
+        <div class="top-left-brand">
+            <img src="{{ asset('images/logo.png') }}" alt="ECL Logo" class="brand-logo-img">
+            <div class="brand-divider"></div>
+            <h1 class="brand-header-title"><span>Task Management</span><br>System</h1>
         </div>
 
-        <!-- Right Side: Login Form Card -->
-        <div class="right-form-panel">
+        <!-- Bottom-Center Core Values & Version -->
+        <div class="bottom-center-area">
+            <div class="system-version">Version 1.0.0 &bull; Developed by <a href="https://github.com/sandip-bhandari" target="_blank" rel="noopener noreferrer">Sandip</a></div>
+        </div>
+
+        <!-- Centered Glassmorphic Login Form -->
+        <div class="center-form-container">
             <div class="web-login-card">
                 
-                <div class="text-center mb-4">
-                    <div class="icon-circle mb-3">
-                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                <div class="text-center mb-2">
+                    <div class="icon-circle mb-1">
+                        <i class="bi bi-shield-lock-fill fs-5"></i>
                     </div>
-                    <h4 class="fw-bold mb-1" style="color: var(--brand-primary);">TMS PORTAL LOGIN</h4>
-                    <p class="text-muted small m-0">Select your authorization domain to continue</p>
+                    <h5 class="fw-bold mb-0" style="color: var(--brand-primary); font-size: 1.15rem;">PORTAL LOGIN</h5>
+                    <p class="text-muted small m-0" style="font-size: 11.5px;">Select your authorization domain to continue</p>
                 </div>
 
                 <!-- Role Switcher -->
-                <div class="role-btn-group d-flex mb-4">
+                <div class="role-btn-group d-flex mb-2">
                     <button type="button" class="role-btn active" id="btnEmp" onclick="setRole('employee')">
                         <i class="bi bi-person-fill"></i> Employee
                     </button>
@@ -401,11 +385,11 @@
                 </div>
 
                 <!-- Alert Feedback Container -->
-                <div id="alertBox" class="alert alert-danger d-none py-2 px-3 text-center mb-3" style="font-size: 13px; border-radius: 10px;"></div>
+                <div id="alertBox" class="alert alert-danger d-none py-1 px-2 text-center mb-2" style="font-size: 12px; border-radius: 8px;"></div>
 
                 <!-- Form Inputs -->
                 <form id="loginForm">
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label-custom">Official Email Address</label>
                         <div class="app-input-wrapper">
                             <i class="bi bi-envelope-fill"></i>
@@ -413,7 +397,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-2">
                         <label class="form-label-custom">Account Password</label>
                         <div class="app-input-wrapper">
                             <i class="bi bi-lock-fill"></i>
@@ -421,14 +405,26 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-app-dark w-100 shadow-sm" id="submitBtn">
+                    <button type="submit" class="btn btn-app-dark w-100 shadow-sm mb-2" id="submitBtn">
                         <span id="btnText">Login to Portal</span>
                         <div id="btnSpinner" class="spinner-border spinner-border-sm d-none" role="status"></div>
                     </button>
                 </form>
 
-                <div class="text-center mt-4 pt-2">
-                    <span class="text-muted" style="font-size: 11.5px;">
+                <!-- Direct APK Download Link Card -->
+                <a href="{{ asset('downloads/ECL_TMS.apk') }}" download="ECL_TMS.apk" class="app-link-card mb-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-android2 fs-5 text-success"></i>
+                        <div class="text-start">
+                            <div class="fw-bold" style="font-size: 11.5px; line-height: 1.1;">Download Android App</div>
+                            <div class="text-muted" style="font-size: 9.5px;">Official ECL TMS Mobile Client</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-download fs-6 opacity-75"></i>
+                </a>
+
+                <div class="text-center pt-1">
+                    <span class="text-muted" style="font-size: 10px;">
                         <i class="bi bi-shield-check text-success me-1"></i> Protected by ECL Cyber-Security Policy
                     </span>
                 </div>
@@ -437,94 +433,98 @@
         </div>
     </div>
 
-    <!-- JavaScript Handling -->
     <script>
-        let currentRole = 'employee';
+    let currentRole = 'employee';
 
-        function setRole(role) {
-            currentRole = role;
-            document.getElementById('btnEmp').classList.toggle('active', role === 'employee');
-            document.getElementById('btnAdmin').classList.toggle('active', role === 'admin');
-        }
+    function setRole(role) {
+        currentRole = role;
+        document.getElementById('btnEmp').classList.toggle('active', role === 'employee');
+        document.getElementById('btnAdmin').classList.toggle('active', role === 'admin');
+    }
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const alertBox = document.getElementById('alertBox');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log("Form submit button clicked successfully!");
+        
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const alertBox = document.getElementById('alertBox');
+        const btnText = document.getElementById('btnText');
+        const btnSpinner = document.getElementById('btnSpinner');
 
-            // Reset Alert & Show Loading Spinner State
-            alertBox.classList.add('d-none');
-            btnText.classList.add('d-none');
-            btnSpinner.classList.remove('d-none');
+        alertBox.classList.add('d-none');
+        btnText.classList.add('d-none');
+        btnSpinner.classList.remove('d-none');
 
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        role: currentRole
-                    })
-                });
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password,
+                    role: currentRole
+                })
+            });
 
-                const data = await response.json();
+            const data = await response.json();
+            console.log("Full API Response:", data);
 
-                if (response.ok) {
-                    // Check user roles payload from API response
-                    const userRoles = (data.role || '').split(',').map(r => r.trim().toLowerCase());
-                    
-                    if (currentRole === 'admin' && !userRoles.includes('admin') && !data.has_admin_access) {
-                        alertBox.textContent = 'Access Denied: You do not have Admin privileges.';
-                        alertBox.classList.remove('d-none');
-                        return;
-                    }
-
-                    // Store Tokens securely in LocalStorage
-                    const tokenToSave = (currentRole === 'admin' ? data.admin_token : data.employee_token) || data.token;
-                    
-                    if (tokenToSave) {
-                        localStorage.setItem('auth_token', tokenToSave);
-                    }
-                    if (data.user) {
-                        localStorage.setItem('user_info', JSON.stringify(data.user));
-                    }
-
-                    // Redirect dynamically based on active domain role
-                    if (currentRole === 'admin') {
-                        window.location.href = '/admin/dashboard';
-                    } else {
-                        window.location.href = '/employee/dashboard';
-                    }
-
-                } else {
-                    let errorMsg = data.message || 'Invalid email or password.';
-                    
-                    if (data.errors && data.errors.email) {
-                        errorMsg = data.errors.email[0];
-                    }
-
-                    alertBox.textContent = errorMsg;
+            if (response.ok) {
+                const tokenToSave = data.token || data.admin_token || data.employee_token || data.access_token;
+                
+                if (!tokenToSave) {
+                    alertBox.textContent = 'Login successful, but token not found in response.';
                     alertBox.classList.remove('d-none');
+                    return;
                 }
-            } catch (error) {
-                console.error('Login Error:', error);
-                alertBox.textContent = 'Server communication error. Please try again.';
+
+                // Purana data clear karke naya save karein
+                localStorage.clear();
+                localStorage.setItem('auth_token', tokenToSave);
+                
+                if (data.user) {
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                }
+
+                // Role check ko robust banayein
+                const serverRole = (data.role || (data.user && data.user.role) || '').toLowerCase();
+                const hasAdminAccess = data.has_admin_access || (data.user && data.user.has_admin_access);
+
+                if (currentRole === 'admin' && !serverRole.includes('admin') && !hasAdminAccess) {
+                    alertBox.textContent = 'Access Denied: You do not have Admin privileges.';
+                    alertBox.classList.remove('d-none');
+                    return;
+                }
+
+                // Final Browser Navigation using replace to avoid history loops
+                if (currentRole === 'admin') {
+                    window.location.replace('/admin/dashboard');
+                } else {
+                    window.location.replace('/employee/dashboard');
+                }
+
+            } else {
+                let errorMsg = data.message || 'Invalid email or password.';
+                if (data.errors && data.errors.email) {
+                    errorMsg = data.errors.email[0];
+                }
+                alertBox.textContent = errorMsg;
                 alertBox.classList.remove('d-none');
-            } finally {
-                // Restore Button State
-                btnText.classList.remove('d-none');
-                btnSpinner.classList.add('d-none');
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Login Error:', error);
+            alertBox.textContent = 'Server communication error. Please try again.';
+            alertBox.classList.remove('d-none');
+        } finally {
+            btnText.classList.remove('d-none');
+            btnSpinner.classList.add('d-none');
+        }
+    });
+</script>
 </body>
 </html>

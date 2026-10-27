@@ -1,28 +1,32 @@
-<?php 
+<?php
 
 use Illuminate\Support\Facades\Route;
 
-// Redirection to Login
+// Default Root Redirect
 Route::get('/', function () {
     return redirect('/login');
 });
 
-// Auth Login Route (Point to auth/login.blade.php)
+// routes/web.php
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-// Admin Dashboard Route
+
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
-});
+})->name('admin.dashboard');
 
-// Employee Dashboard Route
 Route::get('/employee/dashboard', function () {
     return view('employee.dashboard');
-});
+})->name('employee.dashboard');
 
-// Browser par API endpoints ki list dikhane ke liye route
+// Admin Task Assignment Page Route
+Route::get('/admin/assign-task', function () {
+    return view('admin.assign-task');
+})->name('admin.assign-task');
+
+// Browser API List Route
 Route::get('/api-list', function () {
     $html = '<h2 style="font-family: Arial; margin-bottom: 5px;">ECL TMS - API Endpoints List</h2>';
     $html .= '<p style="font-family: Arial; color: #555;">Complete list of registered backend routes.</p>';

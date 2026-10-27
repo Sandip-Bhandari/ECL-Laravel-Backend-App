@@ -1,138 +1,462 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+/* Professional Glassmorphism Dashboard Styling */
+.ecl-tms-page { color: #17283a; }
+.ecl-tms-page .card { 
+    border: 1px solid rgba(255, 255, 255, 0.35) !important; 
+    border-radius: 20px !important; 
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important; 
+    background: rgba(255, 255, 255, 0.88) !important; 
+    backdrop-filter: blur(16px); 
+}
+
+/* Section Headings */
+.ecl-section-title {
+    color: #ffffff !important;
+    font-size: 16px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Analytics Metric Pill Cards */
+.analytics-metric-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(220, 226, 232, 0.8);
+    border-radius: 14px;
+    padding: 14px 18px;
+    transition: all 0.2s ease;
+}
+
+.analytics-metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-color: #e5b72e;
+}
+
+/* Quick Actions Cards */
+.quick-action-card {
+    min-height: 110px;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+}
+
+.qa-card-new::before { background: linear-gradient(180deg, #e5b72e, #b88a14); }
+.qa-card-tasks::before { background: linear-gradient(180deg, #1682f5, #0d5bb5); }
+.qa-card-team::before { background: linear-gradient(180deg, #169b61, #0e6b42); }
+
+.quick-action-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25) !important;
+    background: #ffffff !important;
+}
+
+.qa-icon-wrapper {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: transform 0.25s ease;
+}
+
+.quick-action-card:hover .qa-icon-wrapper {
+    transform: scale(1.1);
+}
+
+.filter-chip { 
+    border: 1px solid rgba(255, 255, 255, 0.4) !important; 
+    background: rgba(255, 255, 255, 0.85) !important; 
+    color: #526071 !important; 
+    border-radius: 10px !important; 
+    padding: 8px 18px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+}
+.filter-chip.active { 
+    background: #202a33 !important; 
+    border-color: #202a33 !important; 
+    color: #fff !important; 
+}
+</style>
+
+<div class="container py-3 ecl-tms-page">
+
     <!-- 1. OVERVIEW TAB SECTION -->
     <div id="sec-overview" class="tab-content-sec">
-        <div class="banner-card d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="icon-box-gold m-0 fs-4"><i class="bi bi-shield-shaded"></i></div>
-                <div>
-                    <h6 class="fw-bold mb-0">Welcome Back, <span id="userNameText">User</span>!</h6>
-                    <small class="text-muted">Monitor overall performance metrics and system activities.</small>
+        
+        <!-- Professional Tasks Analytics Overview Card -->
+        <div class="card border-0 shadow-sm mb-4 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2.5">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="background: #FDF3D6; color: #B2820A; width: 36px; height: 36px; font-size: 17px;">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h6 class="fw-bold m-0 text-dark" style="font-size: 16px; letter-spacing: -0.2px;">Tasks Analytics & Overview</h6>
                 </div>
-            </div>
-        </div>
-
-        <div class="app-card mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold m-0">Tasks Overview</h6>
-                <small class="text-muted fw-bold">Realtime</small>
+                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-3 py-1.5 rounded-pill" style="font-size: 11px;"><i class="bi bi-circle-fill text-success me-1.5" style="font-size: 8px;"></i> Live Status</span>
             </div>
             
-            <div class="d-flex align-items-center">
-                <div class="donut-chart">
-                    <div class="donut-inner">
-                        <span class="fw-bold fs-5" id="statOverviewTotal">0</span>
-                        <small class="text-muted" style="font-size: 9px;">Total Tasks</small>
+            <div class="row align-items-center g-4">
+                <!-- Circular Total Counter Widget -->
+                <div class="col-md-auto text-center">
+                    <div class="shadow-sm mx-auto p-1" style="width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#E2B93B 0% 100%, #EFEAE1 100% 100%); display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 104px; height: 104px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                            <span class="fw-bold fs-2 text-dark lh-1" id="statOverviewTotal">0</span>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 9px; letter-spacing: 0.8px; margin-top: 2px;">Total Tasks</small>
+                        </div>
                     </div>
                 </div>
-                <div class="flex-grow-1" style="font-size: 13px;">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span><i class="bi bi-circle-fill text-warning me-1"></i> Pending</span>
-                        <span class="fw-bold" id="statPendingCount">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span><i class="bi bi-circle-fill text-primary me-1"></i> In Progress</span>
-                        <span class="fw-bold" id="statInProgressCount">0</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <span><i class="bi bi-circle-fill text-success me-1"></i> Completed</span>
-                        <span class="fw-bold" id="statCompletedCount">0</span>
+
+                <!-- Professional Status Breakdown Grid -->
+                <div class="col">
+                    <div class="vstack gap-3">
+                        <div class="analytics-metric-card d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                    <i class="bi bi-hourglass-split"></i>
+                                </div>
+                                <span class="fw-semibold text-dark" style="font-size: 14px;">Pending Tasks</span>
+                            </div>
+                            <span class="fw-bold badge bg-white text-dark border px-3 py-2 shadow-sm fs-6" id="statPendingCount">0</span>
+                        </div>
+
+                        <div class="analytics-metric-card d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </div>
+                                <span class="fw-semibold text-dark" style="font-size: 14px;">In Progress</span>
+                            </div>
+                            <span class="fw-bold badge bg-white text-dark border px-3 py-2 shadow-sm fs-6" id="statInProgressCount">0</span>
+                        </div>
+
+                        <div class="analytics-metric-card d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-success-subtle text-success d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </div>
+                                <span class="fw-semibold text-dark" style="font-size: 14px;">Completed</span>
+                            </div>
+                            <span class="fw-bold badge bg-white text-dark border px-3 py-2 shadow-sm fs-6" id="statCompletedCount">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <h6 class="fw-bold mb-2">Quick Actions</h6>
-        <div class="row g-2 mb-3">
-            <div class="col-4">
-                <div class="action-card" onclick="openCreateTaskModal()">
-                    <div class="icon-box-gold"><i class="bi bi-plus-lg"></i></div>
-                    <small class="fw-bold d-block">New Task</small>
+        <!-- Quick Actions -->
+        <h6 class="ecl-section-title mb-3 px-1"><i class="bi bi-lightning-charge-fill text-warning me-1.5"></i> Quick Actions</h6>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card quick-action-card qa-card-new p-3.5 h-100 d-flex flex-row justify-content-between align-items-center" onclick="openCreateTaskModal()" style="cursor: pointer;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="qa-icon-wrapper" style="background-color: #FDF3D6; color: #B2820A;">
+                            <i class="bi bi-plus-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">New Task</h6>
+                            <small class="text-muted" style="font-size: 11.5px;">Create & assign task</small>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right-circle-fill text-warning fs-5 opacity-75"></i>
                 </div>
             </div>
-            <div class="col-4">
-                <div class="action-card" onclick="switchTab('tasks')">
-                    <div class="icon-box-blue"><i class="bi bi-list-task"></i></div>
-                    <small class="fw-bold d-block">All Tasks</small>
+            
+            <div class="col-md-4">
+                <div class="card quick-action-card qa-card-tasks p-3.5 h-100 d-flex flex-row justify-content-between align-items-center" onclick="switchTab('tasks')" style="cursor: pointer;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="qa-icon-wrapper" style="background-color: #E6F0FA; color: #1E6091;">
+                            <i class="bi bi-list-task"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">All Tasks</h6>
+                            <small class="text-muted" style="font-size: 11.5px;">View tasks list</small>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right-circle-fill text-primary fs-5 opacity-75"></i>
                 </div>
             </div>
-            <div class="col-4">
-                <div class="action-card" onclick="switchTab('team')">
-                    <div class="icon-box-green"><i class="bi bi-people-fill"></i></div>
-                    <small class="fw-bold d-block">View Team</small>
+
+            <div class="col-md-4">
+                <div class="card quick-action-card qa-card-team p-3.5 h-100 d-flex flex-row justify-content-between align-items-center" onclick="switchTab('team')" style="cursor: pointer;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="qa-icon-wrapper" style="background-color: #E8F5E9; color: #2E7D32;">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">View Team</h6>
+                            <small class="text-muted" style="font-size: 11.5px;">Manage members</small>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right-circle-fill text-success fs-5 opacity-75"></i>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- 2. TASKS TAB SECTION -->
     <div id="sec-tasks" class="tab-content-sec d-none">
-        <div class="app-card text-white d-flex justify-content-between align-items-center mb-3" style="background-color: var(--app-dark) !important;">
-            <div>
-                <h6 class="fw-bold m-0">Assign New Task</h6>
-                <small class="opacity-75">Allocate new responsibilities & set deadlines</small>
+        <!-- Professional Horizontal Task Header Banner -->
+        <div class="card border-0 shadow-sm text-white d-flex flex-row justify-content-between align-items-center mb-4 p-4 rounded-4" style="background: rgba(18, 24, 31, 0.75) !important; backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12) !important;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(229, 183, 46, 0.2); color: #e5b72e; width: 42px; height: 42px; font-size: 20px;">
+                    <i class="bi bi-journal-plus"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1 text-white" style="font-size: 17px; letter-spacing: 0.2px;">Task Management & Operations</h5>
+                    <p class="opacity-75 mb-0" style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Allocate new operational responsibilities & set strict deadlines</p>
+                </div>
             </div>
-            <button class="btn btn-light rounded-circle fw-bold p-2 lh-1" onclick="openCreateTaskModal()"><i class="bi bi-plus-lg fs-5"></i></button>
+            <button class="btn fw-bold px-4 py-2.5 rounded-pill shadow-sm flex-shrink-0 d-flex align-items-center gap-2" onclick="openCreateTaskModal()" style="background: linear-gradient(135deg, #e5b72e 0%, #b88a14 100%); color: #12181f; font-size: 13.5px;">
+                <i class="bi bi-plus-lg"></i> New Task
+            </button>
         </div>
 
         <div class="position-relative mb-3">
             <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-            <input type="text" id="searchInput" class="form-control app-input ps-5" placeholder="Search tasks...">
+            <input type="text" id="searchInput" class="form-control ps-5 py-3 shadow-none rounded-4" placeholder="Search tasks by title or description..." style="font-size: 13.5px;">
         </div>
 
-        <div class="d-flex gap-2 overflow-auto pb-2 mb-3">
-            <span class="filter-chip active" onclick="filterTasks('all', this)">All</span>
-            <span class="filter-chip" onclick="filterTasks('pending', this)">Pending</span>
-            <span class="filter-chip" onclick="filterTasks('in_progress', this)">In Progress</span>
-            <span class="filter-chip" onclick="filterTasks('completed', this)">Completed</span>
+        <div class="d-flex gap-2 overflow-auto pb-2 mb-4">
+            <span class="filter-chip active shadow-sm" onclick="filterTasks('all', this)">All</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('pending', this)">Pending</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('in_progress', this)">In Progress</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('completed', this)">Completed</span>
         </div>
 
-        <h6 class="fw-bold mb-2">Tasks & Operations</h6>
+        <h6 class="ecl-section-title mb-3 px-1">Tasks & Operations Directory</h6>
         <div id="taskListContainer">
-            <p class="text-center text-muted my-4">Loading tasks...</p>
+            <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading tasks...</p>
         </div>
     </div>
 
     <!-- 3. TEAM TAB SECTION -->
     <div id="sec-team" class="tab-content-sec d-none">
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-4">
             <div class="col-6">
-                <div class="app-card text-center p-2 mb-0">
-                    <small class="text-muted fw-bold d-block" style="font-size: 10px;">TOTAL TEAM</small>
-                    <h5 class="fw-bold m-0" id="statTeamTotal">0</h5>
+                <div class="card border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Total Workforce</small>
+                    <h3 class="fw-bold m-0 text-dark" id="statTeamTotal">0</h3>
                 </div>
             </div>
             <div class="col-6">
-                <div class="app-card text-center p-2 mb-0">
-                    <small class="text-muted fw-bold d-block" style="font-size: 10px;">DEPARTMENTS</small>
-                    <h5 class="fw-bold m-0" id="statDeptsTotal">0</h5>
+                <div class="card border-0 shadow-sm text-center p-4 rounded-4 bg-white">
+                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Active Departments</small>
+                    <h3 class="fw-bold m-0 text-dark" id="statDeptsTotal">0</h3>
                 </div>
             </div>
         </div>
 
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-4">
             <div class="col-6">
-                <button class="btn btn-app-dark w-100 py-2 small" onclick="openAddEmployeeModal()"><i class="bi bi-person-plus me-1"></i> Add Employee</button>
+                <button class="btn text-white w-100 py-3 shadow-sm fw-semibold rounded-4" style="background-color: #202a33; font-size: 13.5px;" onclick="openAddEmployeeModal()"><i class="bi bi-person-plus-fill me-2"></i> Add Employee</button>
             </div>
             <div class="col-6">
-                <button class="btn btn-outline-secondary w-100 py-2 small bg-white fw-bold" onclick="openAddDeptModal()"><i class="bi bi-building me-1"></i> New Dept</button>
+                <button class="btn btn-outline-secondary w-100 py-3 shadow-sm bg-white fw-semibold text-dark rounded-4" style="border-color: #dfe4e9; font-size: 13.5px;" onclick="openAddDeptModal()"><i class="bi bi-building-add me-2 text-warning"></i> New Dept</button>
             </div>
         </div>
 
-        <h6 class="fw-bold mb-2">Team Members</h6>
+        <h6 class="ecl-section-title mb-3 px-1">Team Directory</h6>
         <div id="employeeListContainer">
-            <p class="text-center text-muted my-4">Loading team members...</p>
+            <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading team members...</p>
         </div>
     </div>
+
+</div>
 @endsection
 
 @push('scripts')
 <script>
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = allTasks.filter(t => t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query)));
-        renderTaskList(filtered);
+    let allTasks = [];
+    let allEmployees = [];
+    let currentFilter = 'all';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.replace('/login');
+            return;
+        }
+
+        await Promise.all([
+            fetchDashboardStats(),
+            fetchTasks(),
+            fetchEmployees()
+        ]);
     });
+
+    function getAuthHeaders() {
+        const token = localStorage.getItem('auth_token');
+        return {
+            'Authorization': 'Bearer ' + (token || ''),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+    }
+
+    async function fetchDashboardStats() {
+        try {
+            const res = await fetch('/api/dashboard', { headers: getAuthHeaders() });
+            if (!res.ok) return;
+
+            const data = await res.json();
+            const stats = data.stats || {};
+            document.getElementById('statOverviewTotal').textContent = stats.total || 0;
+            document.getElementById('statPendingCount').textContent = stats.pending || 0;
+            document.getElementById('statInProgressCount').textContent = stats.in_progress || 0;
+            document.getElementById('statCompletedCount').textContent = stats.completed || 0;
+            
+            if (data.active_workforce !== undefined) {
+                document.getElementById('statTeamTotal').textContent = data.active_workforce;
+            }
+        } catch (err) {
+            console.error('Error fetching dashboard stats:', err);
+        }
+    }
+
+    async function fetchTasks() {
+        try {
+            const res = await fetch('/api/tasks', { headers: getAuthHeaders() });
+            if (!res.ok) return;
+
+            const data = await res.json();
+            allTasks = Array.isArray(data) ? data : (data.tasks || []);
+            renderTaskList(allTasks);
+        } catch (err) {
+            console.error('Error fetching tasks:', err);
+        }
+    }
+
+    function renderTaskList(tasks) {
+        const container = document.getElementById('taskListContainer');
+        if (!tasks || tasks.length === 0) {
+            container.innerHTML = `<p class="text-center text-muted my-4">No tasks found.</p>`;
+            return;
+        }
+
+        container.innerHTML = tasks.map(t => {
+            let badgeClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+            let statusText = t.status || 'Pending';
+            
+            if (statusText === 'in_progress') { badgeClass = 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'; statusText = 'In Progress'; }
+            else if (statusText === 'completed') { badgeClass = 'bg-success-subtle text-success-emphasis border border-success-subtle'; statusText = 'Completed'; }
+
+            return `
+                <div class="card border-0 shadow-sm mb-3 p-3.5 rounded-4 bg-white">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">${t.title}</h6>
+                            <p class="text-muted mb-2 small" style="font-size: 12.5px;">${t.description || 'No description provided.'}</p>
+                        </div>
+                        <span class="badge ${badgeClass} text-capitalize px-3 py-1.5 rounded-pill" style="font-size: 11px; font-weight: 600;">${statusText}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center text-muted pt-2.5 border-top mt-2" style="font-size: 12px;">
+                        <span><i class="bi bi-person-fill me-1 text-dark"></i>${t.assigned_to_user?.name || 'Unassigned'}</span>
+                        <span><i class="bi bi-calendar-event me-1 text-warning"></i>${t.due_date || 'No Deadline'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    const searchInputEl = document.getElementById('searchInput');
+    if (searchInputEl) {
+        searchInputEl.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allTasks.filter(t => {
+                const matchesQuery = t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
+                const matchesFilter = currentFilter === 'all' || t.status === currentFilter;
+                return matchesQuery && matchesFilter;
+            });
+            renderTaskList(filtered);
+        });
+    }
+
+    function filterTasks(status, el) {
+        currentFilter = status;
+        document.querySelectorAll('.filter-chip').forEach(c => {
+            c.classList.remove('active');
+        });
+        if (el) {
+            el.classList.add('active');
+        }
+
+        const filtered = status === 'all' ? allTasks : allTasks.filter(t => t.status === status);
+        renderTaskList(filtered);
+    }
+
+    async function fetchEmployees() {
+        try {
+            const res = await fetch('/api/employees', { headers: getAuthHeaders() });
+            if (!res.ok) return;
+
+            const data = await res.json();
+            allEmployees = Array.isArray(data) ? data : (data.employees || []);
+            document.getElementById('statTeamTotal').textContent = allEmployees.length;
+            renderEmployeeList(allEmployees);
+        } catch (err) {
+            console.error('Error fetching employees:', err);
+        }
+    }
+
+    function renderEmployeeList(employees) {
+        const container = document.getElementById('employeeListContainer');
+        if (!employees || employees.length === 0) {
+            container.innerHTML = `<p class="text-center text-muted my-4">No team members found.</p>`;
+            return;
+        }
+
+        container.innerHTML = employees.map(emp => `
+            <div class="card border-0 shadow-sm mb-3 p-3.5 rounded-4 bg-white d-flex align-items-center justify-content-between flex-row">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-light text-dark fw-bold border d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 16px;">${(emp.name || 'E').charAt(0).toUpperCase()}</div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">${emp.name}</h6>
+                        <small class="text-muted d-block" style="font-size: 12px;">${emp.designation || 'Employee'} &bull; ${emp.department?.name || 'General'}</small>
+                    </div>
+                </div>
+                <span class="badge bg-light text-dark border px-3 py-1.5 fw-semibold rounded-pill" style="font-size: 11px;">${emp.role || 'Member'}</span>
+            </div>
+        `).join('');
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content-sec').forEach(sec => sec.classList.add('d-none'));
+        const target = document.getElementById('sec-' + tabName);
+        if (target) target.classList.remove('d-none');
+
+        document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+        const activeLink = document.getElementById('nav-' + tabName);
+        if (activeLink) activeLink.classList.add('active');
+    }
+
+    function logoutUser() {
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+
+    function openCreateTaskModal() {
+        window.location.href = "{{ route('admin.assign-task') }}";
+    }
 </script>
 @endpush
