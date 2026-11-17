@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DeviceToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,25 +19,35 @@ class AuthController extends Controller
         // Email, password, aur optional fcm_token validate karein
         $data = $request->validate([
             'email'     => 'required|email',
-            'password'  => 'required|string',
+            'password'  => 'nullable|string',
             'fcm_token' => 'nullable|string', // App login ke waqt token bhej sakta hai
         ]);
         
         // Database se user dhoondhein
         $user = User::where('email', $data['email'])->first();
         
-        // Password check karein
-        if (!$user || !Hash::check($data['password'], (string) $user->password)) {
+        $roles = $user ? array_map('trim', explode(',', $user->role)) : [];
+        $isEmployeeOnly = in_array('employee', $roles) && !in_array('admin', $roles);
+        $emailOnlyLoginAllowed = config('services.ecl.allow_email_only_employee_login')
+            && $isEmployeeOnly
+            && empty($data['password']);
+
+        if (!$user || (!$emailOnlyLoginAllowed && (
+            empty($data['password']) || !Hash::check($data['password'], (string) $user->password)
+        ))) {
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
 
         // Agar login ke waqt fcm_token bheja gaya hai toh use update kar dein
         if (!empty($data['fcm_token'])) {
             $user->update(['fcm_token' => $data['fcm_token']]);
+            DeviceToken::updateOrCreate(
+                ['device_token' => $data['fcm_token']],
+                ['user_id' => $user->id, 'platform' => 'android', 'last_seen_at' => now()]
+            );
         }
 
         // Roles ko array mein convert karein (e.g., "admin,employee" -> ['admin', 'employee'])
-        $roles = array_map('trim', explode(',', $user->role));
         $isAdmin = in_array('admin', $roles);
         $isEmployee = in_array('employee', $roles);
         $isDualRole = count($roles) > 1 || ($user->is_dual_role ?? false);
@@ -81,6 +92,11 @@ class AuthController extends Controller
         $request->user()->update([
             'fcm_token' => $request->fcm_token,
         ]);
+
+        DeviceToken::updateOrCreate(
+            ['device_token' => $request->fcm_token],
+            ['user_id' => $request->user()->id, 'platform' => 'android', 'last_seen_at' => now()]
+        );
 
         return response()->json([
             'message' => 'FCM token updated successfully.'

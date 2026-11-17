@@ -67,8 +67,7 @@ If `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN=true`, employee login accepts the official e
 ## 4. Main endpoints
 
 ### Public authentication
-- `POST /api/auth/employee-login`
-- `POST /api/auth/admin-login`
+- `POST /api/login`
 
 ### Authenticated
 - `POST /api/auth/logout`
@@ -129,9 +128,11 @@ Your current Retrofit base URL is:
 
 Replace that with the actual PC/server IP where this Laravel project is running.
 
-Your current `TaskRequest` only sends title, description, status and due_date. To use the Assign New Task screen exactly as shown, update it to also send `department_id`, `assigned_to`, and optionally an attachment using multipart Retrofit.
+The Android project uses Firebase Cloud Messaging. Place the Firebase Android config at `ECLAPP/app/google-services.json` and use the same Firebase project for the backend's Firebase Admin SDK credentials. The backend service-account JSON is private and must not be committed; set its path with `FIREBASE_CREDENTIALS` in the backend `.env`.
 
-The current app's login buttons perform local validation only. They must be changed to call the two authentication endpoints and store the returned Sanctum token.
+The app's login calls `POST /api/login` and stores the returned Sanctum token. Employee email-only login is controlled by `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN`; keep it disabled in production and use password authentication. The app registers its FCM token after successful login.
+
+The task assignment UI currently uses hard-coded department and employee labels. Replace these with values returned by the API so the backend can resolve valid department and assignee records; the request now sends the selected labels and a default priority.
 
 ## 8. Production checklist
 
@@ -140,6 +141,6 @@ The current app's login buttons perform local validation only. They must be chan
 - Change all seeded passwords.
 - Put `.env` outside source control.
 - Use a real domain/API hostname instead of a LAN IP.
-- Configure Firebase Cloud Messaging if push notifications are required.
+- Configure Firebase Admin SDK credentials for Laravel push delivery.
 - Configure queue worker and scheduler for deadline alerts.
 - Restrict CORS origins instead of `*` if a browser client is later added.

@@ -7,10 +7,10 @@ use App\Models\AppNotification;
 use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\User;
+use App\Services\FcmPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Kreait\Firebase\Messaging\CloudMessage;
 
 class TaskController extends Controller
 {
@@ -148,7 +148,7 @@ class TaskController extends Controller
                     ]);
 
                     // Send Push Notification
-                    $this->sendPushNotification(
+                    app(FcmPushService::class)->sendToUser(
                         $data['assigned_to'],
                         'New Task Assigned',
                         'You have been assigned: ' . $newTask->title,
@@ -233,7 +233,7 @@ class TaskController extends Controller
                 $freshTask = $task->fresh();
 
                 // Send Push Notification
-                $this->sendPushNotification(
+                app(FcmPushService::class)->sendToUser(
                     $data['assigned_to'],
                     'New Task Assigned',
                     'You have been assigned: ' . $freshTask->title,
@@ -276,7 +276,7 @@ class TaskController extends Controller
             $freshTask = $task->fresh();
 
             // Send Push Notification to Creator
-            $this->sendPushNotification(
+            app(FcmPushService::class)->sendToUser(
                 $task->creator->id,
                 'Task Approval Requested',
                 $request->user()->name . ' requested completion approval for "' . $freshTask->title . '".',
@@ -306,32 +306,6 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task deleted.']); 
     }
 
-    private function sendPushNotification(int $userId, string $title, string $body, array $data = []): void
-    {
-        try {
-            $deviceTokens = \App\Models\DeviceToken::where('user_id', $userId)->pluck('device_token')->toArray();
-
-            if (!empty($deviceTokens)) {
-                $messaging = app('firebase.messaging');
-                
-                $stringData = array_map('strval', $data);
-
-                foreach ($deviceTokens as $token) {
-                    $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $token)
-                        ->withNotification([
-                            'title' => $title,
-                            'body' => $body,
-                        ])
-                        ->withData($stringData);
-
-                    $messaging->send($message);
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::error('FCM Push Error: ' . $e->getMessage());
-        }
-    }
-
     private function saveAttachment(Task $task, $file, $userId): void 
     { 
         $path = $file->store('tasks/' . $task->id, 'public'); 
@@ -347,9 +321,11 @@ class TaskController extends Controller
 
     private function authorizeView(User $user, Task $task): void 
     { 
-        if ($user->role === 'employee' && $task->assigned_to !== $user->id) {
-            abort(403, 'This task is not assigned to you.');
-        } 
+        $roles = array_map('trim', explode(',', (string) $user->role));
+        $hasAdminAccess = count(array_intersect($roles, ['admin', 'super_admin', 'manager'])) > 0;
+        $isTaskParticipant = $task->created_by === $user->id || $task->assigned_to === $user->id;
+
+        abort_unless($hasAdminAccess || $isTaskParticipant, 403, 'You are not a participant in this task.');
     }
 
     private function payload(Task $t): array 
@@ -374,7 +350,7 @@ class TaskController extends Controller
                 'task_id' => $c->task_id,
                 'user_id' => $c->user_id,
                 'user_name' => $c->user?->name,
-                'comment' => $c->comment,
+                'comment' => $c->message,
                 'created_at' => $c->created_at?->toISOString()
             ]) : [],
             'attachments' => $t->relationLoaded('attachments') ? $t->attachments->map(fn($a) => [

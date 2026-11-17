@@ -6,25 +6,19 @@ All authenticated endpoints use `Authorization: Bearer TOKEN`.
 
 ## Login
 
-### Admin
-`POST /auth/admin-login`
+`POST /login`
 
 ```json
-{"identifier":"admin@ecl.gov.in","password":"Admin@123"}
+{"email":"employee@ecl.gov.in","password":"optional when email-only employee login is enabled"}
 ```
+
+Returns a Sanctum bearer token. Admin login always requires a password; employee email-only login is controlled by `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN`.
+
+### Admin
+Use `POST /login` with the admin email and password.
 
 ### Employee
-`POST /auth/employee-login`
-
-```json
-{"email":"sandip@ecl.gov.in"}
-```
-
-If production password authentication is enabled:
-
-```json
-{"email":"sandip@ecl.gov.in","password":"..."}
-```
+Use `POST /login` with the employee email. Include a password when email-only login is disabled.
 
 ## Dashboard
 
@@ -85,10 +79,17 @@ Fields:
 
 ## Device notifications
 
-`POST /device-token`
+`POST /device-token` (authenticated)
 
 ```json
 {"device_token":"FCM_DEVICE_TOKEN","platform":"android"}
 ```
 
-The backend stores tokens and creates in-app notification records. Actual FCM push delivery requires Firebase server credentials and should be added before production deployment.
+The Android app obtains an FCM registration token and the authenticated API stores it for the signed-in user. Task assignment and task status updates send push notifications to registered devices.
+
+To enable delivery from Laravel:
+
+1. In Firebase Console, create/download a Firebase Admin SDK service-account JSON for the same Firebase project used by the Android app.
+2. Store that JSON outside the repository and set `FIREBASE_CREDENTIALS` in the backend `.env` to its absolute path.
+3. Keep the service-account JSON private; never use the Android `google-services.json` as server credentials.
+4. Ensure the API login is authenticated before registering a device token; `/device-token` and `/update-fcm-token` require a Sanctum bearer token.

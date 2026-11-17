@@ -15,6 +15,7 @@ class User extends Authenticatable
         'parent_id', 
         'name',
         'email',
+        'fcm_token',
         'password',
         'phone',
         'department', 

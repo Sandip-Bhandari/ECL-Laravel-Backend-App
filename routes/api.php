@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\EmployeeController;
@@ -40,8 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree']);
 
     // --- CHAT / MESSAGES ROUTES ---
-    Route::post('/tasks/{id}/messages', [ChatController::class, 'store']);
-    Route::get('/tasks/{id}/messages', [ChatController::class, 'index']);
+    Route::post('/tasks/{task}/messages', [ChatController::class, 'store']);
+    Route::get('/tasks/{task}/messages', [ChatController::class, 'index']);
 
     // --- TASK MANAGEMENT (Admin + Managers) ---
     Route::post('/admin/tasks', [TaskController::class, 'store']);
@@ -50,8 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy']); 
     
     // Chat / Comments for Admin/Manager side
-    Route::get('/admin/tasks/{task}/comments', [CommentController::class, 'index']);
-    Route::post('/admin/tasks/{task}/comments', [CommentController::class, 'store']);
+    Route::get('/admin/tasks/{task}/comments', [ChatController::class, 'index']);
+    Route::post('/admin/tasks/{task}/comments', [ChatController::class, 'store']);
 
     // --- EMPLOYEE MANAGEMENT ---
     Route::get('/employees', [EmployeeController::class, 'index']);
@@ -63,12 +62,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/employee/tasks', [TaskController::class, 'getEmployeeTasks']);
     Route::put('/employee/tasks/{task}', [TaskController::class, 'updateMyTask']);
     
-    Route::get('/employee/tasks/{task}/comments', [CommentController::class, 'index']);
-    Route::post('/employee/tasks/{task}/comments', [CommentController::class, 'store']);
+    Route::get('/employee/tasks/{task}/comments', [ChatController::class, 'index']);
+    Route::post('/employee/tasks/{task}/comments', [ChatController::class, 'store']);
 
     // --- SHARED TASK COMMENTS / CHAT ROUTES ---
-    Route::get('/tasks/{task}/comments', [CommentController::class, 'index']);
-    Route::post('/tasks/{task}/comments', [CommentController::class, 'store']);
+    Route::get('/tasks/{task}/comments', [ChatController::class, 'index']);
+    Route::post('/tasks/{task}/comments', [ChatController::class, 'store']);
 
     // --- FCM TOKEN UPDATE ---
     Route::post('/update-fcm-token', [AuthController::class, 'updateFcmToken']);

@@ -17,11 +17,12 @@ This ZIP contains a Laravel 13 backend codebase prepared around the supplied ECL
 - Task file attachments.
 - In-app notification records and device-token registration.
 - Hourly deadline/overdue notification generation through Laravel scheduler.
+- Firebase Cloud Messaging push delivery for task assignment and task-status events (requires service-account credentials in backend `.env`).
 - Seed data matching the UI examples.
 - API and Android Retrofit integration documentation.
 
-## Important integration work remaining in the Android project
+## Android integration status
 
-The supplied Android UI currently contains local-only login validation, hard-coded departments/employees, hard-coded dashboard numbers, and a Retrofit client with only three task endpoints. The backend is ready for the corresponding API calls, but the Android project must be updated to consume the new endpoints.
+The Android login now calls the API, persists the Sanctum token, requests notification permission, and registers its Firebase Cloud Messaging token. The task assignment UI still uses hard-coded employee/department labels; replace them with API-backed records so assignments target real users.
 
-Those changes are intentionally documented rather than silently modifying the supplied Android source in this backend ZIP.
+Set `FIREBASE_CREDENTIALS` in the backend `.env` to a Firebase Admin SDK service-account JSON path before expecting Laravel to deliver push notifications.
