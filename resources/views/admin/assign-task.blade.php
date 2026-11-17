@@ -110,7 +110,7 @@
                     <small class="text-warning opacity-90" style="font-size: 11.5px;">Allocate operational responsibilities & establish strict execution timelines</small>
                 </div>
             </div>
-            <a href="/dashboard" class="btn btn-outline-light btn-sm bg-white bg-opacity-10 border-0 text-white px-3 py-2 rounded-pill fw-semibold shadow-sm" style="font-size: 12px;">
+            <a href="/admin/dashboard" class="btn btn-outline-light btn-sm bg-white bg-opacity-10 border-0 text-white px-3 py-2 rounded-pill fw-semibold shadow-sm" style="font-size: 12px;">
                 <i class="bi bi-arrow-left me-1"></i> Dashboard
             </a>
         </div>
@@ -184,7 +184,7 @@
             <div class="mb-4">
                 <label class="form-label mb-1.5">Reference Document / File (Optional)</label>
                 <div class="file-dropzone text-center py-3.5 px-3" onclick="document.getElementById('taskFileAttachment').click()">
-                    <input type="file" id="taskFileAttachment" class="d-none" onchange="handleFileSelect(this)">
+                    <input type="file" id="taskFileAttachment" class="d-none" accept=".pdf,.doc,.docx,.zip" onchange="handleFileSelect(this)">
                     <div id="fileUploadPrompt">
                         <i class="bi bi-paperclip text-warning fs-5 me-1"></i>
                         <span class="small text-white fw-semibold">Click to upload reference file</span>
@@ -250,8 +250,10 @@
                 const employees = Array.isArray(empData) ? empData : (empData.employees || empData.data || []);
                 const empSelect = document.getElementById('pageEmpSelect');
                 employees.forEach(emp => {
-                    empSelect.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.designation || 'Staff'})</option>`;
+                    empSelect.insertAdjacentHTML('beforeend', `<option value="${Number(emp.id)}">${escapeHtml(emp.name)} (${escapeHtml(emp.designation || 'Staff')})</option>`);
                 });
+            } else {
+                throw new Error('Unable to load employees.');
             }
 
             if (deptRes.ok) {
@@ -259,11 +261,13 @@
                 const departments = Array.isArray(deptData) ? deptData : (deptData.departments || deptData.data || []);
                 const deptSelect = document.getElementById('pageDeptSelect');
                 departments.forEach(dept => {
-                    deptSelect.innerHTML += `<option value="${dept.id}">${dept.name}</option>`;
+                    deptSelect.insertAdjacentHTML('beforeend', `<option value="${Number(dept.id)}">${escapeHtml(dept.name)}</option>`);
                 });
+            } else {
+                throw new Error('Unable to load departments.');
             }
         } catch (err) {
-            console.error('Error loading form dropdowns:', err);
+            window.alert(err.message || 'Unable to load task assignment options.');
         }
     }
 
@@ -273,37 +277,27 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing Directive...`;
 
-        const payload = {
-            title: document.getElementById('pageTaskTitle').value,
-            department_id: document.getElementById('pageDeptSelect').value,
-            assigned_to: document.getElementById('pageEmpSelect').value,
-            due_date: document.getElementById('pageTaskDueDate').value,
-            priority: document.getElementById('pageTaskPriority').value,
-            description: document.getElementById('pageTaskDesc').value,
-        };
-
         try {
-            const res = await fetch('/api/admin/tasks', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
+            const payload = new FormData();
+            payload.append('title', document.getElementById('pageTaskTitle').value);
+            payload.append('department_id', document.getElementById('pageDeptSelect').value);
+            payload.append('assigned_to', document.getElementById('pageEmpSelect').value);
+            payload.append('due_date', document.getElementById('pageTaskDueDate').value);
+            payload.append('priority', document.getElementById('pageTaskPriority').value);
+            payload.append('description', document.getElementById('pageTaskDesc').value);
+            const attachment = document.getElementById('taskFileAttachment').files[0];
+            if (attachment) payload.append('attachment', attachment);
 
-            if (res.ok) {
-                alert('Task assigned successfully!');
-                window.location.href = '/dashboard';
-            } else {
-                const errData = await res.json();
-                alert('Error: ' + (errData.message || 'Failed to create task'));
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i class="bi bi-shield-check fs-5"></i> Submit & Issue Task Directive`;
-            }
+            const res = await apiFetch('/api/admin/tasks', {
+                method: 'POST',
+                body: payload
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || 'Failed to create task.');
+            window.alert('Task assigned successfully.');
+            window.location.replace('/admin/dashboard');
         } catch (err) {
-            console.error('Submission error:', err);
+            window.alert(err.message || 'Unable to create task.');
             submitBtn.disabled = false;
             submitBtn.innerHTML = `<i class="bi bi-shield-check fs-5"></i> Submit & Issue Task Directive`;
         }

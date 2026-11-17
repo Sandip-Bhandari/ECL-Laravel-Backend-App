@@ -260,9 +260,12 @@
 </div>
 
         <div class="d-flex align-items-center gap-3">
-            <button class="btn border-0 bg-white bg-opacity-10 text-white rounded-circle p-2.5 position-relative shadow-sm" style="width: 40px; height: 40px;">
+            <button onclick="goBack()" class="btn btn-outline-light btn-sm border-0 bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill fw-semibold shadow-sm" aria-label="Go back">
+                <i class="bi bi-arrow-left me-1"></i><span class="d-none d-sm-inline">Back</span>
+            </button>
+            <button onclick="openNotificationsModal()" class="btn border-0 bg-white bg-opacity-10 text-white rounded-circle p-2.5 position-relative shadow-sm" style="width: 40px; height: 40px;" aria-label="Notifications">
                 <i class="bi bi-bell-fill text-warning"></i>
-                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge">0</span>
             </button>
             <button onclick="logoutUser()" class="btn btn-outline-light btn-sm border-0 bg-white bg-opacity-10 text-white px-3.5 py-2 rounded-pill fw-semibold shadow-sm">
                 <i class="bi bi-box-arrow-right me-1.5"></i> Logout
@@ -354,18 +357,308 @@
         </div>
     </div>
 
+    <div class="modal fade" id="webNotificationsModal" tabindex="-1" aria-labelledby="webNotificationsTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="webNotificationsTitle">Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="webNotificationsList"><p class="text-muted text-center">Loading notifications...</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="webTaskModal" tabindex="-1" aria-labelledby="webTaskTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="webTaskTitle">Task details</h5>
+                        <small class="text-muted" id="webTaskMeta"></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                        <span class="badge rounded-pill text-bg-warning" id="webTaskStatusBadge"></span>
+                        <span class="badge rounded-pill text-bg-light" id="webTaskPriority"></span>
+                        <span class="small text-muted" id="webTaskAssignee"></span>
+                        <span class="small text-muted ms-auto" id="webTaskDueDate"></span>
+                    </div>
+                    <p class="p-3 bg-light rounded-3 mb-3" id="webTaskDescription"></p>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <label for="webTaskStatusSelect" class="form-label fw-semibold mb-0">Update status</label>
+                        <select id="webTaskStatusSelect" class="form-select form-select-sm" style="max-width: 230px">
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Approval for Completed</option>
+                            <option>Completed</option>
+                        </select>
+                        <button class="btn btn-sm btn-dark" id="webTaskStatusSave" type="button">Save</button>
+                    </div>
+                    <hr>
+                    <h6 class="fw-bold"><i class="bi bi-chat-dots me-1"></i> Task discussion</h6>
+                    <div id="webTaskMessages" class="border rounded-3 p-3 mb-3 bg-light" style="height: 250px; overflow-y: auto"></div>
+                    <form id="webTaskMessageForm" class="d-flex gap-2">
+                        <input id="webTaskMessageInput" class="form-control" maxlength="5000" placeholder="Write a message..." autocomplete="off" required>
+                        <button class="btn btn-dark" type="submit" aria-label="Send message"><i class="bi bi-send"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let currentWebTaskId = null;
+        let webTaskRefreshTimer = null;
+        let webTaskModal;
+        let webNotificationsModal;
+
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
         }
 
-        // Populate user name in sidebar footer if available
-        document.addEventListener('DOMContentLoaded', () => {
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content-sec').forEach(section => section.classList.add('d-none'));
+            document.getElementById(`sec-${tabName}`)?.classList.remove('d-none');
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.id === `nav-${tabName}`));
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_info');
+            window.location.replace('/login');
+        }
+
+        function goBack() {
+            const currentPath = window.location.pathname;
+            const previousUrl = document.referrer ? new URL(document.referrer, window.location.origin) : null;
+            const previousPath = previousUrl && previousUrl.origin === window.location.origin ? previousUrl.pathname : '';
+            const safePreviousPaths = ['/admin/dashboard', '/admin/assign-task', '/employee/dashboard'];
+            if (safePreviousPaths.includes(previousPath) && previousPath !== currentPath) {
+                window.history.back();
+                return;
+            }
+            const fallbackPath = currentPath.startsWith('/employee/') ? '/employee/dashboard'
+                : currentPath === '/admin/dashboard' ? '/login'
+                : '/admin/dashboard';
+            window.location.assign(fallbackPath);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[character]);
+        }
+
+        function getWebAuthHeaders(extraHeaders = {}) {
+            return {
+                'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
+                'Accept': 'application/json',
+                ...extraHeaders
+            };
+        }
+
+        async function apiFetch(url, options = {}) {
+            const headers = getWebAuthHeaders(options.headers || {});
+            if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+            const response = await fetch(url, { ...options, headers });
+            if (response.status === 401) {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_info');
+                window.location.replace('/login');
+            }
+            return response;
+        }
+
+        function getTaskStatusClass(status) {
+            switch (status) {
+                case 'Completed': return 'text-bg-success';
+                case 'In Progress': return 'text-bg-primary';
+                case 'Approval for Completed': return 'text-bg-info';
+                default: return 'text-bg-warning';
+            }
+        }
+
+        async function openTaskDetails(taskId) {
+            currentWebTaskId = taskId;
+            if (!webTaskModal) webTaskModal = new bootstrap.Modal(document.getElementById('webTaskModal'));
+            document.getElementById('webTaskTitle').textContent = 'Loading task...';
+            document.getElementById('webTaskMessages').innerHTML = '<p class="text-muted text-center mb-0">Loading discussion...</p>';
+            webTaskModal.show();
+            try {
+                const response = await apiFetch(`/api/tasks/${taskId}`);
+                const task = await response.json();
+                if (!response.ok) throw new Error(task.message || 'Unable to load task.');
+                renderWebTask(task);
+                await loadWebTaskMessages(taskId);
+                if (webTaskRefreshTimer) clearInterval(webTaskRefreshTimer);
+                webTaskRefreshTimer = setInterval(() => loadWebTaskMessages(taskId), 5000);
+            } catch (error) {
+                document.getElementById('webTaskTitle').textContent = 'Task unavailable';
+                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger mb-0">${escapeHtml(error.message)}</p>`;
+            }
+        }
+
+        function renderWebTask(task) {
+            const viewRole = window.eclViewRole || 'admin';
+            document.getElementById('webTaskTitle').textContent = task.title || 'Task';
+            document.getElementById('webTaskMeta').textContent = task.department || 'No department';
+            const badge = document.getElementById('webTaskStatusBadge');
+            badge.textContent = task.status || 'Pending';
+            badge.className = `badge rounded-pill ${getTaskStatusClass(task.status)}`;
+            document.getElementById('webTaskPriority').textContent = `${task.priority || 'Medium'} priority`;
+            document.getElementById('webTaskAssignee').textContent = `Assigned to: ${task.assigned_employee || 'Unassigned'}`;
+            document.getElementById('webTaskDueDate').textContent = task.due_date ? `Due: ${task.due_date}` : 'No due date';
+            document.getElementById('webTaskDescription').textContent = task.description || 'No description provided.';
+            const statusSelect = document.getElementById('webTaskStatusSelect');
+            statusSelect.value = task.status || 'Pending';
+            [...statusSelect.options].forEach(option => {
+                option.hidden = viewRole === 'employee' && option.value === 'Completed';
+            });
+        }
+
+        async function loadWebTaskMessages(taskId) {
+            if (String(currentWebTaskId) !== String(taskId)) return;
+            try {
+                const response = await apiFetch(`/api/tasks/${taskId}/messages`);
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Unable to load discussion.');
+                const messages = Array.isArray(result) ? result : (result.data || []);
+                const container = document.getElementById('webTaskMessages');
+                if (!messages.length) {
+                    container.innerHTML = '<p class="text-muted text-center mb-0">No messages yet. Start the task discussion.</p>';
+                    return;
+                }
+                const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
+                container.innerHTML = messages.map(message => {
+                    const mine = Number(message.user_id) === Number(currentUser.id);
+                    return `<div class="mb-2 ${mine ? 'text-end' : ''}">
+                        <div class="d-inline-block text-start rounded-3 px-3 py-2 ${mine ? 'bg-primary text-white' : 'bg-white border'}" style="max-width: 85%">
+                            <small class="d-block fw-semibold">${escapeHtml(message.user?.name || 'User')}</small>
+                            <span>${escapeHtml(message.message || '')}</span>
+                        </div>
+                        <small class="d-block text-muted">${escapeHtml(message.created_at || '')}</small>
+                    </div>`;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            } catch (error) {
+                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger mb-0">${escapeHtml(error.message)}</p>`;
+            }
+        }
+
+        async function openNotificationsModal() {
+            if (!webNotificationsModal) webNotificationsModal = new bootstrap.Modal(document.getElementById('webNotificationsModal'));
+            webNotificationsModal.show();
+            const container = document.getElementById('webNotificationsList');
+            container.innerHTML = '<p class="text-muted text-center">Loading notifications...</p>';
+            try {
+                const response = await apiFetch('/api/notifications');
+                const notifications = await response.json();
+                if (!response.ok) throw new Error(notifications.message || 'Unable to load notifications.');
+                const unread = notifications.filter(notification => !notification.is_read).length;
+                const badge = document.getElementById('notifBadge');
+                badge.textContent = unread;
+                badge.classList.toggle('d-none', unread === 0);
+                container.innerHTML = notifications.length ? notifications.map(notification => `
+                    <button type="button" class="w-100 text-start border-0 border-bottom bg-white py-3 ${notification.is_read ? 'opacity-75' : ''}"
+                        onclick="openNotificationTask(${Number(notification.id)}, ${Number(notification.task_id || 0)})">
+                        <span class="fw-semibold d-block">${escapeHtml(notification.title)}</span>
+                        <span class="small text-muted d-block">${escapeHtml(notification.message)}</span>
+                        <small class="text-muted">${escapeHtml(notification.created_at || '')}</small>
+                    </button>`).join('') : '<p class="text-muted text-center mb-0">You have no notifications.</p>';
+            } catch (error) {
+                container.innerHTML = `<p class="text-danger text-center mb-0">${escapeHtml(error.message)}</p>`;
+            }
+        }
+
+        async function openNotificationTask(notificationId, taskId) {
+            try {
+                if (notificationId) {
+                    const response = await apiFetch(`/api/notifications/${notificationId}/read`, { method: 'POST' });
+                    if (!response.ok) throw new Error('Unable to mark notification as read.');
+                }
+                webNotificationsModal?.hide();
+                if (taskId) openTaskDetails(taskId);
+            } catch (error) {
+                window.alert(error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
-            if (userInfo && userInfo.name) {
-                const el = document.getElementById('sidebarUserName');
-                if (el) el.textContent = userInfo.name;
+            if (userInfo.name) document.getElementById('sidebarUserName').textContent = userInfo.name;
+            if (localStorage.getItem('auth_token')) {
+                try {
+                    const response = await apiFetch('/api/notifications');
+                    if (response.ok) {
+                        const notifications = await response.json();
+                        const unread = notifications.filter(notification => !notification.is_read).length;
+                        const badge = document.getElementById('notifBadge');
+                        badge.textContent = unread;
+                        badge.classList.toggle('d-none', unread === 0);
+                    }
+                } catch (error) {
+                    console.error('Unable to load notification count:', error);
+                }
+            }
+            document.getElementById('webTaskModal').addEventListener('hidden.bs.modal', () => {
+                currentWebTaskId = null;
+                if (webTaskRefreshTimer) clearInterval(webTaskRefreshTimer);
+            });
+            document.getElementById('webTaskStatusSave').addEventListener('click', async () => {
+                if (!currentWebTaskId) return;
+                const status = document.getElementById('webTaskStatusSelect').value;
+                const endpoint = window.eclViewRole === 'employee'
+                    ? `/api/employee/tasks/${currentWebTaskId}`
+                    : `/api/admin/tasks/${currentWebTaskId}`;
+                const button = document.getElementById('webTaskStatusSave');
+                button.disabled = true;
+                try {
+                    const response = await apiFetch(endpoint, { method: 'PUT', body: JSON.stringify({ status }) });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Unable to update task status.');
+                    renderWebTask(result.task);
+                    if (typeof fetchTasks === 'function') fetchTasks();
+                } catch (error) {
+                    window.alert(error.message);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+            document.getElementById('webTaskMessageForm').addEventListener('submit', async event => {
+                event.preventDefault();
+                if (!currentWebTaskId) return;
+                const input = document.getElementById('webTaskMessageInput');
+                const message = input.value.trim();
+                if (!message) return;
+                const button = event.currentTarget.querySelector('button');
+                button.disabled = true;
+                try {
+                    const response = await apiFetch(`/api/tasks/${currentWebTaskId}/messages`, {
+                        method: 'POST',
+                        body: JSON.stringify({ message })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Unable to send message.');
+                    input.value = '';
+                    await loadWebTaskMessages(currentWebTaskId);
+                } catch (error) {
+                    window.alert(error.message);
+                } finally {
+                    button.disabled = false;
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.eclViewRole === 'employee') {
+                document.querySelectorAll('#nav-team, #nav-overview').forEach(element => element.classList.add('d-none'));
+                document.getElementById('nav-tasks')?.classList.add('active');
             }
         });
     </script>

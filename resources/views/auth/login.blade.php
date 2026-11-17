@@ -424,9 +424,10 @@
                 </a>
 
                 <div class="text-center pt-1">
-                    <span class="text-muted" style="font-size: 10px;">
+                    <a href="{{ route('security-policy') }}" class="text-muted text-decoration-none" style="font-size: 10px;">
                         <i class="bi bi-shield-check text-success me-1"></i> Protected by ECL Cyber-Security Policy
-                    </span>
+                        <span class="d-block mt-1 text-decoration-underline">Security, privacy, terms &amp; how to use</span>
+                    </a>
                 </div>
 
             </div>
@@ -440,12 +441,14 @@
         currentRole = role;
         document.getElementById('btnEmp').classList.toggle('active', role === 'employee');
         document.getElementById('btnAdmin').classList.toggle('active', role === 'admin');
+        const password = document.getElementById('password');
+        password.required = role === 'admin';
+        password.placeholder = role === 'admin' ? 'Enter your password' : 'Password (if enabled)';
     }
+    setRole('employee');
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        console.log("Form submit button clicked successfully!");
-        
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const alertBox = document.getElementById('alertBox');
@@ -472,36 +475,31 @@
             });
 
             const data = await response.json();
-            console.log("Full API Response:", data);
 
             if (response.ok) {
-                const tokenToSave = data.token || data.admin_token || data.employee_token || data.access_token;
-                
-                if (!tokenToSave) {
-                    alertBox.textContent = 'Login successful, but token not found in response.';
-                    alertBox.classList.remove('d-none');
-                    return;
-                }
-
-                // Purana data clear karke naya save karein
-                localStorage.clear();
-                localStorage.setItem('auth_token', tokenToSave);
-                
-                if (data.user) {
-                    localStorage.setItem('user_info', JSON.stringify(data.user));
-                }
-
-                // Role check ko robust banayein
                 const serverRole = (data.role || (data.user && data.user.role) || '').toLowerCase();
                 const hasAdminAccess = data.has_admin_access || (data.user && data.user.has_admin_access);
 
-                if (currentRole === 'admin' && !serverRole.includes('admin') && !hasAdminAccess) {
+                if (currentRole === 'admin' && !serverRole.split(',').map(role => role.trim()).some(role => ['admin', 'super_admin', 'manager'].includes(role)) && !hasAdminAccess) {
                     alertBox.textContent = 'Access Denied: You do not have Admin privileges.';
                     alertBox.classList.remove('d-none');
                     return;
                 }
 
-                // Final Browser Navigation using replace to avoid history loops
+                const tokenToSave = currentRole === 'admin'
+                    ? (data.admin_token || data.token || data.access_token)
+                    : (data.employee_token || data.token || data.access_token);
+                if (!tokenToSave) {
+                    alertBox.textContent = 'Login response did not include an access token.';
+                    alertBox.classList.remove('d-none');
+                    return;
+                }
+
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_info');
+                localStorage.setItem('auth_token', tokenToSave);
+                if (data.user) localStorage.setItem('user_info', JSON.stringify(data.user));
+
                 if (currentRole === 'admin') {
                     window.location.replace('/admin/dashboard');
                 } else {

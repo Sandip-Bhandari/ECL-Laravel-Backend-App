@@ -239,9 +239,10 @@
 
         <div class="d-flex gap-2 overflow-auto pb-2 mb-4">
             <span class="filter-chip active shadow-sm" onclick="filterTasks('all', this)">All</span>
-            <span class="filter-chip shadow-sm" onclick="filterTasks('pending', this)">Pending</span>
-            <span class="filter-chip shadow-sm" onclick="filterTasks('in_progress', this)">In Progress</span>
-            <span class="filter-chip shadow-sm" onclick="filterTasks('completed', this)">Completed</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('Pending', this)">Pending</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('In Progress', this)">In Progress</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('Approval for Completed', this)">Awaiting approval</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('Completed', this)">Completed</span>
         </div>
 
         <h6 class="ecl-section-title mb-3 px-1">Tasks & Operations Directory</h6>
@@ -281,12 +282,14 @@
             <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading team members...</p>
         </div>
     </div>
-
+    @include('components.modal-add-employee')
+    @include('components.modal-add-dept')
 </div>
 @endsection
 
 @push('scripts')
 <script>
+    window.eclViewRole = 'admin';
     let allTasks = [];
     let allEmployees = [];
     let currentFilter = 'all';
@@ -316,10 +319,9 @@
 
     async function fetchDashboardStats() {
         try {
-            const res = await fetch('/api/dashboard', { headers: getAuthHeaders() });
-            if (!res.ok) return;
-
+            const res = await apiFetch('/api/dashboard');
             const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Unable to load dashboard statistics.');
             const stats = data.stats || {};
             document.getElementById('statOverviewTotal').textContent = stats.total || 0;
             document.getElementById('statPendingCount').textContent = stats.pending || 0;
@@ -329,6 +331,7 @@
             if (data.active_workforce !== undefined) {
                 document.getElementById('statTeamTotal').textContent = data.active_workforce;
             }
+            document.getElementById('statDeptsTotal').textContent = (data.tasks_by_department || []).length;
         } catch (err) {
             console.error('Error fetching dashboard stats:', err);
         }
@@ -336,14 +339,13 @@
 
     async function fetchTasks() {
         try {
-            const res = await fetch('/api/tasks', { headers: getAuthHeaders() });
-            if (!res.ok) return;
-
+            const res = await apiFetch('/api/tasks');
             const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Unable to load tasks.');
             allTasks = Array.isArray(data) ? data : (data.tasks || []);
-            renderTaskList(allTasks);
+            renderTaskList(filterVisibleTasks());
         } catch (err) {
-            console.error('Error fetching tasks:', err);
+            document.getElementById('taskListContainer').innerHTML = `<p class="alert alert-danger">${escapeHtml(err.message)}</p>`;
         }
     }
 
@@ -355,26 +357,25 @@
         }
 
         container.innerHTML = tasks.map(t => {
-            let badgeClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
-            let statusText = t.status || 'Pending';
-            
-            if (statusText === 'in_progress') { badgeClass = 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'; statusText = 'In Progress'; }
-            else if (statusText === 'completed') { badgeClass = 'bg-success-subtle text-success-emphasis border border-success-subtle'; statusText = 'Completed'; }
-
+            const statusText = t.status || 'Pending';
+            const badgeClass = statusText === 'Completed' ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
+                : statusText === 'In Progress' ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'
+                : statusText === 'Approval for Completed' ? 'bg-info-subtle text-info-emphasis border border-info-subtle'
+                : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
             return `
-                <div class="card border-0 shadow-sm mb-3 p-3.5 rounded-4 bg-white">
+                <button type="button" class="card text-start border-0 shadow-sm mb-3 p-3 rounded-4 bg-white w-100" onclick="openTaskDetails(${Number(t.id)})">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">${t.title}</h6>
-                            <p class="text-muted mb-2 small" style="font-size: 12.5px;">${t.description || 'No description provided.'}</p>
+                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">${escapeHtml(t.title)}</h6>
+                            <p class="text-muted mb-2 small" style="font-size: 12.5px;">${escapeHtml(t.description || 'No description provided.')}</p>
                         </div>
-                        <span class="badge ${badgeClass} text-capitalize px-3 py-1.5 rounded-pill" style="font-size: 11px; font-weight: 600;">${statusText}</span>
+                        <span class="badge ${badgeClass} px-3 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">${escapeHtml(statusText)}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center text-muted pt-2.5 border-top mt-2" style="font-size: 12px;">
-                        <span><i class="bi bi-person-fill me-1 text-dark"></i>${t.assigned_to_user?.name || 'Unassigned'}</span>
-                        <span><i class="bi bi-calendar-event me-1 text-warning"></i>${t.due_date || 'No Deadline'}</span>
+                        <span><i class="bi bi-person-fill me-1 text-dark"></i>${escapeHtml(t.assigned_employee || 'Unassigned')}</span>
+                        <span><i class="bi bi-calendar-event me-1 text-warning"></i>${escapeHtml(t.due_date || 'No deadline')}</span>
                     </div>
-                </div>
+                </button>
             `;
         }).join('');
     }
@@ -383,12 +384,14 @@
     if (searchInputEl) {
         searchInputEl.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = allTasks.filter(t => {
-                const matchesQuery = t.title.toLowerCase().includes(query) || (t.description && t.description.toLowerCase().includes(query));
-                const matchesFilter = currentFilter === 'all' || t.status === currentFilter;
-                return matchesQuery && matchesFilter;
-            });
-            renderTaskList(filtered);
+            renderTaskList(filterVisibleTasks(query));
+        });
+    }
+
+    function filterVisibleTasks(query = (document.getElementById('searchInput')?.value || '').toLowerCase()) {
+        return allTasks.filter(task => {
+            const matchesQuery = `${task.title || ''} ${task.description || ''}`.toLowerCase().includes(query);
+            return matchesQuery && (currentFilter === 'all' || task.status === currentFilter);
         });
     }
 
@@ -401,21 +404,19 @@
             el.classList.add('active');
         }
 
-        const filtered = status === 'all' ? allTasks : allTasks.filter(t => t.status === status);
-        renderTaskList(filtered);
+        renderTaskList(filterVisibleTasks());
     }
 
     async function fetchEmployees() {
         try {
-            const res = await fetch('/api/employees', { headers: getAuthHeaders() });
-            if (!res.ok) return;
-
+            const res = await apiFetch('/api/employees');
             const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Unable to load team members.');
             allEmployees = Array.isArray(data) ? data : (data.employees || []);
             document.getElementById('statTeamTotal').textContent = allEmployees.length;
             renderEmployeeList(allEmployees);
         } catch (err) {
-            console.error('Error fetching employees:', err);
+            document.getElementById('employeeListContainer').innerHTML = `<p class="alert alert-danger">${escapeHtml(err.message)}</p>`;
         }
     }
 
@@ -427,15 +428,23 @@
         }
 
         container.innerHTML = employees.map(emp => `
-            <div class="card border-0 shadow-sm mb-3 p-3.5 rounded-4 bg-white d-flex align-items-center justify-content-between flex-row">
+            <div class="card border-0 shadow-sm mb-3 p-3 rounded-4 bg-white d-flex align-items-center justify-content-between flex-row gap-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-light text-dark fw-bold border d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 16px;">${(emp.name || 'E').charAt(0).toUpperCase()}</div>
+                    <div class="rounded-circle bg-light text-dark fw-bold border d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 16px;">${escapeHtml((emp.name || 'E').charAt(0).toUpperCase())}</div>
                     <div>
-                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">${emp.name}</h6>
-                        <small class="text-muted d-block" style="font-size: 12px;">${emp.designation || 'Employee'} &bull; ${emp.department?.name || 'General'}</small>
+                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">${escapeHtml(emp.name)}</h6>
+                        <small class="text-muted d-block" style="font-size: 12px;">${escapeHtml(emp.designation || 'Employee')} &bull; ${escapeHtml(emp.department || 'General')} &bull; ${escapeHtml(emp.email || '')}</small>
                     </div>
                 </div>
-                <span class="badge bg-light text-dark border px-3 py-1.5 fw-semibold rounded-pill" style="font-size: 11px;">${emp.role || 'Member'}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge ${emp.status === 'inactive' ? 'text-bg-secondary' : 'text-bg-success'} rounded-pill">${escapeHtml(emp.status || 'active')}</span>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" title="${emp.status === 'inactive' ? 'Activate' : 'Deactivate'} account"
+                        onclick="toggleEmployeeStatus(${Number(emp.id)}, '${emp.status === 'inactive' ? 'active' : 'inactive'}')">
+                        <i class="bi ${emp.status === 'inactive' ? 'bi-person-check' : 'bi-person-dash'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" type="button" title="Remove employee"
+                        onclick="removeEmployee(${Number(emp.id)})"><i class="bi bi-trash"></i></button>
+                </div>
             </div>
         `).join('');
     }
@@ -457,6 +466,62 @@
 
     function openCreateTaskModal() {
         window.location.href = "{{ route('admin.assign-task') }}";
+    }
+
+    function openAddEmployeeModal() {
+        loadEmployeeDepartments();
+        new bootstrap.Modal(document.getElementById('addEmpModal')).show();
+    }
+
+    function openAddDeptModal() {
+        new bootstrap.Modal(document.getElementById('addDeptModal')).show();
+    }
+
+    async function loadEmployeeDepartments() {
+        const select = document.getElementById('empDeptSelect');
+        try {
+            const response = await apiFetch('/api/departments');
+            const departments = await response.json();
+            if (!response.ok) throw new Error(departments.message || 'Unable to load departments.');
+            select.innerHTML = '<option value="">Select Department...</option>' + departments.map(department =>
+                `<option value="${Number(department.id)}">${escapeHtml(department.name)}</option>`
+            ).join('');
+        } catch (error) {
+            select.innerHTML = '<option value="">Departments could not be loaded</option>';
+            console.error(error);
+        }
+    }
+
+    async function toggleEmployeeStatus(employeeId, status) {
+        try {
+            const response = await apiFetch(`/api/employees/${employeeId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Unable to update employee status.');
+            await fetchEmployees();
+        } catch (error) {
+            window.alert(error.message);
+        }
+    }
+
+    async function removeEmployee(employeeId) {
+        if (!window.confirm('Remove this employee account? This cannot be undone.')) return;
+        try {
+            const response = await apiFetch(`/api/employees/${employeeId}`, { method: 'DELETE' });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Unable to remove employee.');
+            await fetchEmployees();
+        } catch (error) {
+            window.alert(error.message);
+        }
+    }
+
+    function fetchEmployeesAndDepts() {
+        fetchEmployees();
+        fetchDashboardStats();
+        loadEmployeeDepartments();
     }
 </script>
 @endpush

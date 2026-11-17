@@ -14,11 +14,18 @@
                         <input type="email" id="empEmail" class="form-control app-input" placeholder="Email Address" required>
                     </div>
                     <div class="mb-2">
-                        <input type="password" id="empPassword" class="form-control app-input" placeholder="Password" required>
+                        <input type="password" id="empPassword" class="form-control app-input" placeholder="Password (optional)" minlength="6">
                     </div>
                     <div class="mb-3">
-                        <select id="empDeptSelect" class="form-select app-input" required>
+                        <select id="empDeptSelect" class="form-select app-input">
                             <option value="">Select Department...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <select id="empRoleSelect" class="form-select app-input" required>
+                            <option value="employee">Employee</option>
+                            <option value="admin">Admin</option>
+                            <option value="admin,employee">Admin and employee</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-app-dark w-100">Save Employee</button>
@@ -31,21 +38,29 @@
 <script>
     document.getElementById('addEmpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const res = await apiFetch('/api/admin/create-user', {
-            method: 'POST',
-            body: JSON.stringify({
+        const form = e.currentTarget;
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        try {
+            const res = await apiFetch('/api/employees', {
+                method: 'POST',
+                body: JSON.stringify({
                 name: document.getElementById('empName').value,
                 email: document.getElementById('empEmail').value,
                 password: document.getElementById('empPassword').value,
-                department_id: document.getElementById('empDeptSelect').value
+                department_id: document.getElementById('empDeptSelect').value || null,
+                role: document.getElementById('empRoleSelect').value
             })
-        });
-        if (res && res.ok) {
-            document.getElementById('addEmpForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('addEmpModal')).hide();
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || 'Failed to create employee.');
+            form.reset();
+            bootstrap.Modal.getInstance(document.getElementById('addEmpModal'))?.hide();
             fetchEmployeesAndDepts();
-        } else {
-            alert("Failed to create employee.");
+        } catch (error) {
+            window.alert(error.message);
+        } finally {
+            button.disabled = false;
         }
     });
 </script>

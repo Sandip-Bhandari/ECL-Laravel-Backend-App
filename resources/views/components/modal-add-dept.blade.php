@@ -23,16 +23,23 @@
 <script>
     document.getElementById('addDeptForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const res = await apiFetch('/api/departments', {
-            method: 'POST',
-            body: JSON.stringify({ name: document.getElementById('deptName').value })
-        });
-        if (res && res.ok) {
+        const form = e.currentTarget;
+        const button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        try {
+            const res = await apiFetch('/api/departments', {
+                method: 'POST',
+                body: JSON.stringify({ name: document.getElementById('deptName').value })
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || 'Failed to create department.');
             document.getElementById('addDeptForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('addDeptModal')).hide();
+            bootstrap.Modal.getInstance(document.getElementById('addDeptModal'))?.hide();
             fetchEmployeesAndDepts();
-        } else {
-            alert("Failed to create department.");
+        } catch (error) {
+            window.alert(error.message);
+        } finally {
+            button.disabled = false;
         }
     });
 </script>

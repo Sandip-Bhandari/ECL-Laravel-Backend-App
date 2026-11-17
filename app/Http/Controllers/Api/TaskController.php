@@ -22,7 +22,7 @@ class TaskController extends Controller
             ->latest();
 
         // Agar user Admin ya Super Admin nahi hai, tabhi restriction lagayein
-        if (!in_array($user->role, ['super_admin', 'admin'])) {
+        if (!$this->hasAdminRole($user)) {
             $q->where(function($query) use ($user) {
                 $query->where('created_by', $user->id)
                       ->orWhere('assigned_to', $user->id);
@@ -116,7 +116,7 @@ class TaskController extends Controller
                 'attachment' => 'nullable|file|max:10240'
             ]);
 
-            if (isset($data['assigned_to']) && !in_array($currentUser->role, ['super_admin', 'admin'])) {
+            if (isset($data['assigned_to']) && !$this->hasAdminRole($currentUser)) {
                 $isSubordinate = $currentUser->children()->where('id', $data['assigned_to'])->exists();
                 if (!$isSubordinate) {
                     return response()->json([
@@ -187,7 +187,7 @@ class TaskController extends Controller
     {
         $currentUser = $request->user();
 
-        if (!in_array($currentUser->role, ['super_admin', 'admin'])) {
+        if (!$this->hasAdminRole($currentUser)) {
             $isSubordinateTask = $currentUser->children()->where('id', $task->assigned_to)->exists();
             if ($task->created_by !== $currentUser->id && !$isSubordinateTask) {
                 return response()->json(['message' => 'Unauthorized to update this task.'], 403);
@@ -298,7 +298,7 @@ class TaskController extends Controller
     public function destroy(Request $request, Task $task) 
     { 
         $currentUser = $request->user();
-        if (!in_array($currentUser->role, ['super_admin', 'admin']) && $task->created_by !== $currentUser->id) {
+        if (!$this->hasAdminRole($currentUser) && $task->created_by !== $currentUser->id) {
             return response()->json(['message' => 'Unauthorized to delete this task.'], 403);
         }
 
@@ -322,10 +322,16 @@ class TaskController extends Controller
     private function authorizeView(User $user, Task $task): void 
     { 
         $roles = array_map('trim', explode(',', (string) $user->role));
-        $hasAdminAccess = count(array_intersect($roles, ['admin', 'super_admin', 'manager'])) > 0;
+        $hasAdminAccess = $this->hasAdminRole($user) || in_array('manager', $roles, true);
         $isTaskParticipant = $task->created_by === $user->id || $task->assigned_to === $user->id;
 
         abort_unless($hasAdminAccess || $isTaskParticipant, 403, 'You are not a participant in this task.');
+    }
+
+    private function hasAdminRole(User $user): bool
+    {
+        $roles = array_map('trim', explode(',', (string) $user->role));
+        return count(array_intersect($roles, ['admin', 'super_admin'])) > 0;
     }
 
     private function payload(Task $t): array 

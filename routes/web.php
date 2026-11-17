@@ -12,6 +12,7 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
+Route::view('/security-policy', 'security-policy')->name('security-policy');
 
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
