@@ -186,6 +186,8 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $currentUser = $request->user();
+        $roles = array_map('trim', explode(',', (string) $currentUser->role));
+        $hasAdminRole = $this->hasAdminRole($currentUser) || in_array('manager', $roles, true);
 
         if (!$this->hasAdminRole($currentUser)) {
             $isSubordinateTask = $currentUser->children()->where('id', $task->assigned_to)->exists();
@@ -204,6 +206,16 @@ class TaskController extends Controller
             'due_date' => 'nullable|date_format:Y-m-d',
             'attachment' => 'nullable|file|max:10240'
         ]);
+
+        if (array_key_exists('status', $data)) {
+            abort_unless(
+                $hasAdminRole
+                    && $task->status === 'Approval for Completed'
+                    && $data['status'] === 'Completed',
+                403,
+                'Admins can only approve tasks awaiting completion approval.'
+            );
+        }
 
         $attachment = $request->file('attachment'); 
         unset($data['attachment']);

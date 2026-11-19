@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TaskController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Middleware\RefreshSanctumToken;
 
 
 // --- PUBLIC AUTH ROUTE (Direct Login without OTP) ---
@@ -20,7 +21,7 @@ Route::post('/admin/create-user', [AuthController::class, 'createUser']);
 Route::get('/departments', [DepartmentController::class, 'index']);
 
 // Authenticated Routes (Sanctum Protected)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/profile', [AuthController::class, 'profile']);
 
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/device-token', [NotificationController::class, 'storeDeviceToken']);
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
 
     // --- DASHBOARD & DEPARTMENTS ---
     Route::get('/dashboard', [DashboardController::class, 'index']);

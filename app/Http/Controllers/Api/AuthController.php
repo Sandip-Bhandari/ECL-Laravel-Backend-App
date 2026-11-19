@@ -55,13 +55,14 @@ class AuthController extends Controller
         // Tokens generate karein
         $adminToken = null;
         $employeeToken = null;
+        $tokenExpiresAt = now()->addHours(48);
 
         if ($isAdmin) {
-            $adminToken = $user->createToken('android-admin')->plainTextToken;
+            $adminToken = $user->createToken('android-admin', ['*'], $tokenExpiresAt)->plainTextToken;
         }
 
         if ($isEmployee || !$isAdmin) {
-            $employeeToken = $user->createToken('android-employee')->plainTextToken;
+            $employeeToken = $user->createToken('android-employee', ['*'], $tokenExpiresAt)->plainTextToken;
         }
 
         // Primary default token (agar dual role hai toh admin token pehle preference rakhega, warna employee)
@@ -127,6 +128,7 @@ class AuthController extends Controller
             'phone'        => $u->phone ?? null,
             'designation'  => $u->designation ?? null,
             'department'   => is_object($u->department) ? $u->department?->name : ($u->department ?? null),
+            'branch'       => $u->branch ?? null,
             'is_dual_role' => (bool) $isDualRole
         ]; 
     }

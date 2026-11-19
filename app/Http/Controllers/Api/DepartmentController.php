@@ -13,7 +13,7 @@ class DepartmentController extends Controller
     public function index()
     {
         try {
-            $departments = Department::where('is_active', true)
+            $departments = Department::query()
                 ->orderBy('name')
                 ->get(['id', 'parent_id', 'name', 'code']);
 

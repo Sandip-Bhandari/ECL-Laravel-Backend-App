@@ -183,6 +183,7 @@ class EmployeeController extends Controller
             'phone' => $u->phone ?? null,
             'designation' => $u->designation ?? null,
             'department' => $u->department ?? null,
+            'branch' => $u->branch ?? null,
             'status' => $u->status ?? 'active',
             'parent_id' => $u->parent_id ?? null,
             // App ke liye is_dual_role bhi payload mein bhej diya gaya hai taaki UI par switch button show ho sake

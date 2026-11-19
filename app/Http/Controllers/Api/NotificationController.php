@@ -25,6 +25,14 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marked as read.']);
     }
 
+    public function destroy(Request $request, AppNotification $notification)
+    {
+        abort_unless($notification->user_id === $request->user()->id, 403);
+        $notification->delete();
+
+        return response()->json(['message' => 'Notification deleted.']);
+    }
+
     public function storeDeviceToken(Request $request)
     {
         $data = $request->validate([
