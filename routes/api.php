@@ -12,10 +12,9 @@ use App\Http\Middleware\RefreshSanctumToken;
 
 
 // --- PUBLIC AUTH ROUTE (Direct Login without OTP) ---
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-
-// Admin/System দ্বারা User (Employee) create karke Department se link karne ka route
-Route::post('/admin/create-user', [AuthController::class, 'createUser']);
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:login')
+    ->name('login');
 
 // Public Department Route
 Route::get('/departments', [DepartmentController::class, 'index']);
@@ -37,7 +36,8 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
 
     // --- DASHBOARD & DEPARTMENTS ---
     Route::get('/dashboard', [DashboardController::class, 'index']);
-    Route::post('/departments', [DepartmentController::class, 'store']);
+    Route::post('/departments', [DepartmentController::class, 'store'])
+        ->middleware('role:super_admin,admin');
     Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree']);
 
     // --- CHAT / MESSAGES ROUTES ---
@@ -45,10 +45,13 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
     Route::get('/tasks/{task}/messages', [ChatController::class, 'index']);
 
     // --- TASK MANAGEMENT (Admin + Managers) ---
-    Route::post('/admin/tasks', [TaskController::class, 'store']);
+    Route::post('/admin/tasks', [TaskController::class, 'store'])
+        ->middleware('role:super_admin,admin,manager');
     Route::get('/admin/tasks/{task}', [TaskController::class, 'show']);      
-    Route::put('/admin/tasks/{task}', [TaskController::class, 'update']);     
-    Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy']); 
+    Route::put('/admin/tasks/{task}', [TaskController::class, 'update'])
+        ->middleware('role:super_admin,admin,manager');
+    Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy'])
+        ->middleware('role:super_admin,admin,manager');
     
     // Chat / Comments for Admin/Manager side
     Route::get('/admin/tasks/{task}/comments', [ChatController::class, 'index']);
@@ -56,9 +59,12 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
 
     // --- EMPLOYEE MANAGEMENT ---
     Route::get('/employees', [EmployeeController::class, 'index']);
-    Route::post('/employees', [EmployeeController::class, 'store']);
-    Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
-    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
+    Route::post('/employees', [EmployeeController::class, 'store'])
+        ->middleware('role:super_admin,admin,manager');
+    Route::put('/employees/{employee}', [EmployeeController::class, 'update'])
+        ->middleware('role:super_admin,admin,manager');
+    Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])
+        ->middleware('role:super_admin,admin,manager');
 
     // --- EMPLOYEE SELF-ROUTES ---
     Route::get('/employee/tasks', [TaskController::class, 'getEmployeeTasks']);

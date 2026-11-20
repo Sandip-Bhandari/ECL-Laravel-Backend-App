@@ -18,7 +18,7 @@ class RoleMiddleware
 
         // 🟢 User ke roles ko split kar lo (agar comma-separated hain jaise 'admin,employee')
         // Jaise 'admin,employee' ban jayega ['admin', 'employee']
-        $userRoles = explode(',', $user->role);
+        $userRoles = array_map('trim', explode(',', (string) $user->role));
 
         // Check karo ki user ke paas jo roles hain, unme se koi bhi role 
         // route ke allowed $roles ke sath match karta hai ya nahi

@@ -110,7 +110,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'masteradmin@coalindia.in'],
             [
                 'name' => 'Master Admin',
-                'password' => Hash::make('Admin@123'),
+                'password' => Hash::make(env('SEED_ADMIN_PASSWORD', str()->password(24))),
                 'phone' => '+91 8670676756',
                 'role' => 'admin',
                 'department' => 'CCMD', // Yeh field add kar di hai
@@ -125,7 +125,7 @@ class DatabaseSeeder extends Seeder
        $additionalUsers = [
             [
                 'name' => 'Vivek Kumar',
-                'password' => 'Vivek@123', // Yahan plain password rakhein, loop mein Hash ho jayega
+                'password' => env('SEED_USER_PASSWORD', str()->password(24)),
                 'role' => 'admin',
                 'is_dual_role' => 0,
                 'phone' => '+91 9876543210',

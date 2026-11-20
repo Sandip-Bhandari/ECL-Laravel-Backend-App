@@ -16,15 +16,17 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Email, password, aur optional fcm_token validate karein
         $data = $request->validate([
             'email'     => 'required|email',
             'password'  => 'nullable|string',
-            'fcm_token' => 'nullable|string', // App login ke waqt token bhej sakta hai
+            'fcm_token' => 'nullable|string|max:2048',
         ]);
-        
-        // Database se user dhoondhein
+
         $user = User::where('email', $data['email'])->first();
+
+        if (!$user || $user->status !== 'active') {
+            throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
+        }
         
         $roles = $user ? array_map('trim', explode(',', $user->role)) : [];
         $isEmployeeOnly = in_array('employee', $roles) && !in_array('admin', $roles);
@@ -32,9 +34,9 @@ class AuthController extends Controller
             && $isEmployeeOnly
             && empty($data['password']);
 
-        if (!$user || (!$emailOnlyLoginAllowed && (
+        if (!$emailOnlyLoginAllowed && (
             empty($data['password']) || !Hash::check($data['password'], (string) $user->password)
-        ))) {
+        )) {
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
 

@@ -17,9 +17,17 @@ class EmployeeController extends Controller
         $currentUser = auth()->user();
         $q = User::orderBy('name');
 
-        // 🟢 Hierarchy Filter: Agar user Super Admin / Top Management nahi hai, toh sirf apne direct subordinates dekhega
-        if ($currentUser && $currentUser->role !== 'super_admin') {
+        if ($this->hasRole($currentUser, 'super_admin')) {
+            // Super admin can view the complete organization.
+        } elseif ($this->hasRole($currentUser, 'admin')) {
+            $q->where(function ($query) use ($currentUser) {
+                $query->where('parent_id', $currentUser->id)
+                    ->orWhere('id', $currentUser->id);
+            });
+        } elseif ($this->hasRole($currentUser, 'manager')) {
             $q->where('parent_id', $currentUser->id);
+        } else {
+            $q->where('id', $currentUser->id);
         }
 
         if ($request->filled('search')) {
@@ -40,27 +48,33 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Incoming Employee Data:', $request->all());
-
         try {
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'nullable|string',
+                'password' => 'nullable|string|min:8',
                 'phone' => 'nullable|string|max:30',
                 'designation' => 'nullable|string|max:255',
                 'department' => 'nullable|string|max:255',
                 'branch' => 'nullable|string|max:255',
-                // 🟢 Updated Rule: 'admin,employee' dual role ko bhi validate karne ke liye allow kiya gaya hai
-                'role' => ['required', Rule::in(['admin', 'employee', 'admin,employee'])],
-                'is_dual_role' => 'nullable|boolean'
+                'role' => ['required', Rule::in(['super_admin', 'admin', 'manager', 'employee', 'admin,employee'])],
+                'is_dual_role' => 'nullable|boolean',
+                'parent_id' => 'nullable|integer|exists:users,id',
             ]);
 
-            // 🟢 Fix: Agar app se password bheja hai toh woh use ho, warna 'Default@123'
-            $passwordInput = $request->filled('password') ? $request->input('password') : 'Default@123';
+            $passwordInput = $request->filled('password')
+                ? $request->input('password')
+                : str()->password(16);
             $data['password'] = Hash::make($passwordInput);
             
             $data['status'] = 'active';
+            $currentUser = $request->user();
+            $allowedRoles = $this->creatableRoles($currentUser);
+            if (!in_array($data['role'], $allowedRoles, true)) {
+                return response()->json([
+                    'message' => 'You are not authorized to create this role.'
+                ], 403);
+            }
 
             // Agar role 'admin,employee' hai toh automatic is_dual_role true set ho jayega
             if (isset($data['role']) && $data['role'] === 'admin,employee') {
@@ -69,8 +83,9 @@ class EmployeeController extends Controller
                 $data['is_dual_role'] = $request->input('is_dual_role', false);
             }
 
-            // 🟢 Naye user ka parent_id current logged-in user ban jayega (Chain System)
-            $data['parent_id'] = auth()->id();
+            $data['parent_id'] = $this->hasRole($currentUser, 'super_admin')
+                ? ($data['parent_id'] ?? null)
+                : $currentUser->id;
 
             if ($request->filled('department')) {
                 $data['department'] = $request->input('department');
@@ -101,16 +116,14 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             Log::error('Database Error:', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Server Error: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Unable to create staff profile.'], 500);
         }
     }
 
     public function update(Request $request, User $employee)
     {
         $currentUser = auth()->user();
-
-        // 🟢 Security Check: Ensure manager can only update their own subordinate
-        if ($currentUser->role !== 'super_admin' && $employee->parent_id !== $currentUser->id) {
+        if (!$this->canManageUser($currentUser, $employee)) {
             return response()->json(['message' => 'Unauthorized: You can only modify your direct subordinates.'], 403);
         }
 
@@ -122,10 +135,14 @@ class EmployeeController extends Controller
             'designation' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
             'branch' => 'nullable|string|max:255',
-            'role' => ['sometimes', Rule::in(['admin', 'employee', 'admin,employee'])],
+            'role' => ['sometimes', Rule::in(['super_admin', 'admin', 'manager', 'employee', 'admin,employee'])],
             'status' => ['sometimes', Rule::in(['active', 'inactive'])],
             'is_dual_role' => 'nullable|boolean'
         ]);
+
+        if (isset($data['role']) && !in_array($data['role'], $this->creatableRoles($currentUser), true)) {
+            return response()->json(['message' => 'You are not authorized to assign this role.'], 403);
+        }
 
         if (isset($data['role']) && $data['role'] === 'admin,employee') {
             $data['is_dual_role'] = true;
@@ -164,8 +181,7 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'You cannot delete your own account.'], 422); 
         }
 
-        // 🟢 Security Check: Manager can only delete their own subordinate
-        if ($currentUser->role !== 'super_admin' && $employee->parent_id !== $currentUser->id) {
+        if (!$this->canManageUser($currentUser, $employee)) {
             return response()->json(['message' => 'Unauthorized: You can only remove your direct subordinates.'], 403);
         }
 
@@ -189,5 +205,47 @@ class EmployeeController extends Controller
             // App ke liye is_dual_role bhi payload mein bhej diya gaya hai taaki UI par switch button show ho sake
             'is_dual_role' => (bool) ($u->is_dual_role ?? ($u->role === 'admin,employee'))
         ]; 
+    }
+
+    private function hasRole(?User $user, string $role): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        $roles = array_map('trim', explode(',', (string) $user->role));
+        return in_array($role, $roles, true);
+    }
+
+    private function creatableRoles(User $currentUser): array
+    {
+        if ($this->hasRole($currentUser, 'super_admin')) {
+            return ['super_admin', 'admin', 'manager', 'employee', 'admin,employee'];
+        }
+
+        if ($this->hasRole($currentUser, 'admin')) {
+            return ['admin', 'manager', 'employee', 'admin,employee'];
+        }
+
+        if ($this->hasRole($currentUser, 'manager')) {
+            return ['employee'];
+        }
+
+        return [];
+    }
+
+    private function canManageUser(User $currentUser, User $employee): bool
+    {
+        if ($this->hasRole($currentUser, 'super_admin')) {
+            return true;
+        }
+
+        if ($this->hasRole($currentUser, 'admin')) {
+            return $employee->parent_id === $currentUser->id
+                || $employee->id === $currentUser->id;
+        }
+
+        return $this->hasRole($currentUser, 'manager')
+            && $employee->parent_id === $currentUser->id;
     }
 }

@@ -11,7 +11,12 @@ class RefreshSanctumToken
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->user()?->currentAccessToken();
+        $user = $request->user();
+        if (!$user || $user->status !== 'active') {
+            return response()->json(['message' => 'Account is inactive.'], 403);
+        }
+
+        $token = $user->currentAccessToken();
         if ($token instanceof PersonalAccessToken) {
             $token->forceFill(['expires_at' => now()->addHours(48)])->save();
         }

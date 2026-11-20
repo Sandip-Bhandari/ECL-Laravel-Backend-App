@@ -21,8 +21,7 @@ class DepartmentController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to fetch departments: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to fetch departments',
-                'error' => $e->getMessage()
+                'message' => 'Failed to fetch departments'
             ], 500);
         }
     }
@@ -44,8 +43,7 @@ class DepartmentController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to fetch department tree: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Failed to fetch department tree',
-                'error' => $e->getMessage()
+                'message' => 'Failed to fetch department tree'
             ], 500);
         }
     }
@@ -83,8 +81,7 @@ class DepartmentController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to create department: ' . $e->getMessage());
             return response()->json([
-                'message' => 'Server error while creating department',
-                'error' => $e->getMessage()
+                'message' => 'Server error while creating department'
             ], 500);
         }
     }

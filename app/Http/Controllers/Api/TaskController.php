@@ -113,7 +113,7 @@ class TaskController extends Controller
                 'priority' => ['required', Rule::in(['High', 'Medium', 'Low'])],
                 'status' => ['nullable', Rule::in(['Pending', 'In Progress', 'Approval for Completed', 'Completed'])],
                 'due_date' => 'nullable|date',
-                'attachment' => 'nullable|file|max:10240'
+                'attachment' => 'nullable|file|max:10240|mimes:pdf,png,jpg,jpeg,doc,docx,xls,xlsx'
             ]);
 
             if (isset($data['assigned_to']) && !$this->hasAdminRole($currentUser)) {
@@ -175,10 +175,12 @@ class TaskController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Task operation failed.', [
+                'exception' => $e,
+                'user_id' => $request->user()?->id,
+            ]);
             return response()->json([
-                'message' => 'Server Error: ' . $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => basename($e->getFile())
+                'message' => 'Unable to complete the task operation.'
             ], 500);
         }
     }
@@ -204,7 +206,7 @@ class TaskController extends Controller
             'priority' => ['sometimes', Rule::in(['High', 'Medium', 'Low'])],
             'status' => [Rule::in(['Pending', 'In Progress', 'Approval for Completed', 'Completed'])],
             'due_date' => 'nullable|date_format:Y-m-d',
-            'attachment' => 'nullable|file|max:10240'
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,png,jpg,jpeg,doc,docx,xls,xlsx'
         ]);
 
         if (array_key_exists('status', $data)) {
