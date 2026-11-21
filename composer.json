@@ -47,7 +47,7 @@
     ],
     "test": [
       "@php artisan config:clear",
-      "@php artisan test"
+      "@php vendor/phpunit/phpunit/phpunit"
     ]
   },
   "extra": {

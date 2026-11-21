@@ -8,11 +8,16 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException('The development database seeder cannot run in production.');
+        }
+
         // Foreign key checks disable kar dete hain taaki truncate mein koi error na aaye
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Task::truncate();

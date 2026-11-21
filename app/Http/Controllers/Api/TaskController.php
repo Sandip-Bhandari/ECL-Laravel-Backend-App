@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\User;
 use App\Services\FcmPushService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -21,12 +22,9 @@ class TaskController extends Controller
         $q = Task::with(['department', 'assignee', 'creator', 'comments.user', 'attachments'])
             ->latest();
 
-        // Agar user Admin ya Super Admin nahi hai, tabhi restriction lagayein
+        // Admins see all tasks; managers and employees are scoped to their users.
         if (!$this->hasAdminRole($user)) {
-            $q->where(function($query) use ($user) {
-                $query->where('created_by', $user->id)
-                      ->orWhere('assigned_to', $user->id);
-            });
+            $this->applyUserTaskScope($q, $user);
         }
 
         if ($request->filled('status')) {
@@ -117,10 +115,9 @@ class TaskController extends Controller
             ]);
 
             if (isset($data['assigned_to']) && !$this->hasAdminRole($currentUser)) {
-                $isSubordinate = $currentUser->children()->where('id', $data['assigned_to'])->exists();
-                if (!$isSubordinate) {
+                if (!$this->canManageTaskUser($currentUser, (int) $data['assigned_to'])) {
                     return response()->json([
-                        'message' => 'Unauthorized: You can only assign tasks to your direct reporting subordinates.'
+                        'message' => 'Unauthorized: You can only assign tasks to yourself or your direct reporting subordinates.'
                     ], 403);
                 }
             }
@@ -192,10 +189,7 @@ class TaskController extends Controller
         $hasAdminRole = $this->hasAdminRole($currentUser) || in_array('manager', $roles, true);
 
         if (!$this->hasAdminRole($currentUser)) {
-            $isSubordinateTask = $currentUser->children()->where('id', $task->assigned_to)->exists();
-            if ($task->created_by !== $currentUser->id && !$isSubordinateTask) {
-                return response()->json(['message' => 'Unauthorized to update this task.'], 403);
-            }
+            $this->authorizeView($currentUser, $task);
         }
 
         $data = $request->validate([
@@ -208,6 +202,13 @@ class TaskController extends Controller
             'due_date' => 'nullable|date_format:Y-m-d',
             'attachment' => 'nullable|file|max:10240|mimes:pdf,png,jpg,jpeg,doc,docx,xls,xlsx'
         ]);
+
+        if (isset($data['assigned_to']) && !$this->hasAdminRole($currentUser)
+            && !$this->canManageTaskUser($currentUser, (int) $data['assigned_to'])) {
+            return response()->json([
+                'message' => 'Unauthorized: You can only assign tasks to yourself or your direct reporting subordinates.'
+            ], 403);
+        }
 
         if (array_key_exists('status', $data)) {
             abort_unless(
@@ -312,7 +313,12 @@ class TaskController extends Controller
     public function destroy(Request $request, Task $task) 
     { 
         $currentUser = $request->user();
-        if (!$this->hasAdminRole($currentUser) && $task->created_by !== $currentUser->id) {
+        $roles = array_map('trim', explode(',', (string) $currentUser->role));
+        $isManager = in_array('manager', $roles, true);
+
+        if ($isManager) {
+            $this->authorizeView($currentUser, $task);
+        } elseif (!$this->hasAdminRole($currentUser) && $task->created_by !== $currentUser->id) {
             return response()->json(['message' => 'Unauthorized to delete this task.'], 403);
         }
 
@@ -335,11 +341,38 @@ class TaskController extends Controller
 
     private function authorizeView(User $user, Task $task): void 
     { 
-        $roles = array_map('trim', explode(',', (string) $user->role));
-        $hasAdminAccess = $this->hasAdminRole($user) || in_array('manager', $roles, true);
         $isTaskParticipant = $task->created_by === $user->id || $task->assigned_to === $user->id;
+        $roles = array_map('trim', explode(',', (string) $user->role));
+        $isManager = in_array('manager', $roles, true);
+        $isSubordinateTask = $isManager && (
+            $user->children()->whereKey($task->created_by)->exists()
+            || $user->children()->whereKey($task->assigned_to)->exists()
+        );
 
-        abort_unless($hasAdminAccess || $isTaskParticipant, 403, 'You are not a participant in this task.');
+        abort_unless(
+            $this->hasAdminRole($user) || $isTaskParticipant || $isSubordinateTask,
+            403,
+            'You are not a participant in this task.'
+        );
+    }
+
+    private function applyUserTaskScope(Builder $query, User $user): void
+    {
+        $userIds = [$user->id];
+        $roles = array_map('trim', explode(',', (string) $user->role));
+        if (in_array('manager', $roles, true)) {
+            $userIds = $user->children()->pluck('id')->push($user->id)->all();
+        }
+
+        $query->where(function (Builder $query) use ($userIds) {
+            $query->whereIn('created_by', $userIds)
+                ->orWhereIn('assigned_to', $userIds);
+        });
+    }
+
+    private function canManageTaskUser(User $user, int $userId): bool
+    {
+        return $user->id === $userId || $user->children()->whereKey($userId)->exists();
     }
 
     private function hasAdminRole(User $user): bool

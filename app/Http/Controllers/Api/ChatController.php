@@ -77,9 +77,17 @@ class ChatController extends Controller
     {
         $user = $request->user();
         $roles = array_map('trim', explode(',', (string) $user->role));
-        $hasAdminAccess = count(array_intersect($roles, ['admin', 'super_admin', 'manager'])) > 0;
+        $hasAdminAccess = count(array_intersect($roles, ['admin', 'super_admin'])) > 0;
         $isTaskParticipant = $task->created_by === $user->id || $task->assigned_to === $user->id;
+        $isSubordinateTask = in_array('manager', $roles, true) && (
+            $user->children()->whereKey($task->created_by)->exists()
+            || $user->children()->whereKey($task->assigned_to)->exists()
+        );
 
-        abort_unless($hasAdminAccess || $isTaskParticipant, 403, 'You are not a participant in this task.');
+        abort_unless(
+            $hasAdminAccess || $isTaskParticipant || $isSubordinateTask,
+            403,
+            'You are not a participant in this task.'
+        );
     }
 }

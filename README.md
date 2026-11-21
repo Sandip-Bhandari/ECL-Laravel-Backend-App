@@ -52,15 +52,7 @@ For a physical phone, use the PC's LAN IP, e.g. `http://192.168.1.10:8000/api/`,
 
 ## 3. Seed accounts
 
-### Admin
-- Email / identifier: `admin@ecl.gov.in`
-- Password: `Admin@123`
-
-### Employee accounts
-- `rahul@ecl.com`
-- `amit@ecl.com`
-- `priya@ecl.com`
-- `sandip@ecl.gov.in`
+The database seeder is for local development only and is blocked in production. It generates random passwords unless `SEED_ADMIN_PASSWORD` and `SEED_USER_PASSWORD` are set in the local `.env`; do not commit or share those values. Rotate any credentials that were previously exposed.
 
 If `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN=true`, employee login accepts the official email without a password to match the current Android UI. **For production, set it to false and add a password field or an OTP flow.**
 
@@ -138,7 +130,7 @@ The task assignment UI currently uses hard-coded department and employee labels.
 
 - Use HTTPS.
 - Disable email-only employee login.
-- Change all seeded passwords.
+- Rotate all seeded or previously exposed passwords.
 - Put `.env` outside source control.
 - Use a real domain/API hostname instead of a LAN IP.
 - Configure Firebase Admin SDK credentials for Laravel push delivery.

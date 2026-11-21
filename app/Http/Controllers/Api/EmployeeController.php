@@ -130,7 +130,7 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($employee->id)],
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8',
             'phone' => 'nullable|string|max:30',
             'designation' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',

@@ -22,7 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         RateLimiter::for('login', function (Request $request) {
             $email = strtolower((string) $request->input('email', 'unknown'));
-            return Limit::perMinute(5)->by($email.'|'.$request->ip());
+            return [
+                Limit::perMinute(5)->by($request->ip()),
+                Limit::perMinute(5)->by($email.'|'.$request->ip()),
+            ];
         });
     })
     ->withExceptions(function (Exceptions $exceptions) {
