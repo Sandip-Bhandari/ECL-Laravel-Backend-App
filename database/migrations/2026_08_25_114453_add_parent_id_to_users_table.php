@@ -12,7 +12,7 @@ return new class extends Migration
             // Sirf parent_id add karna hai yahan
             if (!Schema::hasColumn('users', 'parent_id')) {
                 $table->unsignedBigInteger('parent_id')->nullable()->after('id');
-                $table->foreign('parent_id')->references('id')->on('users')->onDelete('cascade');
+                $table->foreign('parent_id')->references('id')->on('users')->nullOnDelete();
             }
         });
     }

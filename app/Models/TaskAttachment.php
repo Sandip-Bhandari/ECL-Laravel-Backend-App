@@ -7,5 +7,11 @@ class TaskAttachment extends Model
     protected $appends = ['url'];
     public function task() { return $this->belongsTo(Task::class); }
     public function uploader() { return $this->belongsTo(User::class, 'uploaded_by'); }
-    public function getUrlAttribute(): string { return asset('storage/'.$this->file_path); }
+    public function getUrlAttribute(): string
+    {
+        return route('tasks.attachments.show', [
+            'task' => $this->task_id,
+            'attachment' => $this->id,
+        ]);
+    }
 }

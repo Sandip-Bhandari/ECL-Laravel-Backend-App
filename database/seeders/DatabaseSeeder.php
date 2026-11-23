@@ -3,11 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
-use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class DatabaseSeeder extends Seeder
@@ -18,12 +16,14 @@ class DatabaseSeeder extends Seeder
             throw new RuntimeException('The development database seeder cannot run in production.');
         }
 
-        // Foreign key checks disable kar dete hain taaki truncate mein koi error na aaye
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Task::truncate();
-        User::truncate();
-        Department::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        $seedAdminPassword = env('SEED_ADMIN_PASSWORD') ?: str()->password(24);
+        $seedUserPassword = env('SEED_USER_PASSWORD') ?: str()->password(24);
+        if (strlen($seedAdminPassword) < 12 || strlen($seedUserPassword) < 12) {
+            throw new RuntimeException('Seed account passwords must be at least 12 characters.');
+        }
+        if ($seedAdminPassword === $seedUserPassword) {
+            throw new RuntimeException('Seed account passwords must be unique.');
+        }
 
         // 1. Official ECL Departments Hierarchy Create Karein
         $departmentsData = [
@@ -111,11 +111,11 @@ class DatabaseSeeder extends Seeder
         }
 
         // 2. Fixed Master Admin User Create Karein
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['email' => 'masteradmin@coalindia.in'],
             [
                 'name' => 'Master Admin',
-                'password' => Hash::make(env('SEED_ADMIN_PASSWORD', str()->password(24))),
+                'password' => Hash::make($seedAdminPassword),
                 'phone' => '+91 8670676756',
                 'role' => 'admin',
                 'department' => 'CCMD', // Yeh field add kar di hai
@@ -130,7 +130,7 @@ class DatabaseSeeder extends Seeder
        $additionalUsers = [
             [
                 'name' => 'Vivek Kumar',
-                'password' => env('SEED_USER_PASSWORD', str()->password(24)),
+                'password' => $seedUserPassword,
                 'role' => 'admin',
                 'is_dual_role' => 0,
                 'phone' => '+91 9876543210',
@@ -146,7 +146,7 @@ class DatabaseSeeder extends Seeder
         foreach ($additionalUsers as $uData) {
             $isDualRole = str_contains($uData['role'], ',') ? 1 : 0;
 
-            User::updateOrCreate(
+            User::firstOrCreate(
                 ['email' => $uData['email']],
                 [
                     'name' => $uData['name'],

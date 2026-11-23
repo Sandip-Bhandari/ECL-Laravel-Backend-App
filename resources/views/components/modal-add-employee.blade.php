@@ -14,7 +14,7 @@
                         <input type="email" id="empEmail" class="form-control app-input" placeholder="Email Address" required>
                     </div>
                     <div class="mb-2">
-                        <input type="password" id="empPassword" class="form-control app-input" placeholder="Password (optional)" minlength="6">
+                        <input type="password" id="empPassword" class="form-control app-input" placeholder="Initial password (min 12 characters)" minlength="12" autocomplete="new-password" required>
                     </div>
                     <div class="mb-3">
                         <select id="empDeptSelect" class="form-select app-input">
@@ -36,6 +36,19 @@
 </div>
 
 <script>
+    const userRoles = String(JSON.parse(localStorage.getItem('user_info') || '{}').role || '')
+        .split(',')
+        .map(role => role.trim());
+
+    if (!userRoles.includes('super_admin')) {
+        document.querySelectorAll('#empRoleSelect option[value="admin"], #empRoleSelect option[value="admin,employee"]')
+            .forEach(option => option.remove());
+    }
+    if (!userRoles.includes('admin') && !userRoles.includes('super_admin')) {
+        document.querySelectorAll('#empRoleSelect option:not([value="employee"])')
+            .forEach(option => option.remove());
+    }
+
     document.getElementById('addEmpForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const form = e.currentTarget;

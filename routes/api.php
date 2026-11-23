@@ -27,6 +27,8 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
     // --- GENERAL & SHARED TASK ROUTES ---
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::get('/tasks/{task}', [TaskController::class, 'show']);
+    Route::get('/tasks/{task}/attachments/{attachment}', [TaskController::class, 'downloadAttachment'])
+        ->name('tasks.attachments.show');
 
     // --- NOTIFICATION ROUTES ---
     Route::post('/device-token', [NotificationController::class, 'storeDeviceToken']);
@@ -35,10 +37,12 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy']);
 
     // --- DASHBOARD & DEPARTMENTS ---
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('role:super_admin,admin,manager');
     Route::post('/departments', [DepartmentController::class, 'store'])
         ->middleware('role:super_admin,admin');
-    Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree']);
+    Route::get('/departments/tree', [DepartmentController::class, 'getDepartmentTree'])
+        ->middleware('role:super_admin,admin,manager');
 
     // --- CHAT / MESSAGES ROUTES ---
     Route::post('/tasks/{task}/messages', [ChatController::class, 'store']);
@@ -47,18 +51,22 @@ Route::middleware(['auth:sanctum', RefreshSanctumToken::class])->group(function 
     // --- TASK MANAGEMENT (Admin + Managers) ---
     Route::post('/admin/tasks', [TaskController::class, 'store'])
         ->middleware('role:super_admin,admin,manager');
-    Route::get('/admin/tasks/{task}', [TaskController::class, 'show']);      
+    Route::get('/admin/tasks/{task}', [TaskController::class, 'show'])
+        ->middleware('role:super_admin,admin,manager');
     Route::put('/admin/tasks/{task}', [TaskController::class, 'update'])
         ->middleware('role:super_admin,admin,manager');
     Route::delete('/admin/tasks/{task}', [TaskController::class, 'destroy'])
         ->middleware('role:super_admin,admin,manager');
     
     // Chat / Comments for Admin/Manager side
-    Route::get('/admin/tasks/{task}/comments', [ChatController::class, 'index']);
-    Route::post('/admin/tasks/{task}/comments', [ChatController::class, 'store']);
+    Route::get('/admin/tasks/{task}/comments', [ChatController::class, 'index'])
+        ->middleware('role:super_admin,admin,manager');
+    Route::post('/admin/tasks/{task}/comments', [ChatController::class, 'store'])
+        ->middleware('role:super_admin,admin,manager');
 
     // --- EMPLOYEE MANAGEMENT ---
-    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::get('/employees', [EmployeeController::class, 'index'])
+        ->middleware('role:super_admin,admin,manager');
     Route::post('/employees', [EmployeeController::class, 'store'])
         ->middleware('role:super_admin,admin,manager');
     Route::put('/employees/{employee}', [EmployeeController::class, 'update'])

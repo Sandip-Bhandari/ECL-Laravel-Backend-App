@@ -9,16 +9,10 @@ All authenticated endpoints use `Authorization: Bearer TOKEN`.
 `POST /login`
 
 ```json
-{"email":"employee@ecl.gov.in","password":"optional when email-only employee login is enabled"}
+{"email":"employee@ecl.gov.in","password":"YOUR_PASSWORD"}
 ```
 
-Returns a Sanctum bearer token. Admin login always requires a password; employee email-only login is controlled by `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN`.
-
-### Admin
-Use `POST /login` with the admin email and password.
-
-### Employee
-Use `POST /login` with the employee email. Include a password when email-only login is disabled.
+Returns a Sanctum bearer token. A password is required for every role. New and updated passwords must be at least 12 characters; OTP login is not used.
 
 ## Dashboard
 
@@ -44,20 +38,22 @@ Returns:
 
 `GET /tasks?search=database`
 
-Employees automatically receive only their assigned tasks.
+Employees automatically receive only their assigned tasks. Dashboard access is restricted to administrators and managers.
 
 ## Create task
 
-`POST /tasks` as multipart or JSON.
+`POST /admin/tasks` as multipart or JSON, with an administrator or manager token.
 
 Fields:
 - title required
 - description
 - department_id
 - assigned_to
-- status: Pending | In Progress | Completed
+- status: Pending | In Progress | Approval for Completed | Completed
 - due_date: YYYY-MM-DD
 - attachment: optional file, max 10 MB
+
+Attachments are stored privately. Download with `GET /tasks/{task}/attachments/{attachment}` and the same bearer token; the requester must be able to view the task.
 
 ## Comments
 
@@ -71,7 +67,7 @@ Fields:
 
 ## Employee task status
 
-`PUT /my/tasks/{id}`
+`PUT /employee/tasks/{id}`
 
 ```json
 {"status":"In Progress"}

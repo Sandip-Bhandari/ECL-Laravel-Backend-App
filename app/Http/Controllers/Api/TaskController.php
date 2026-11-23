@@ -11,6 +11,7 @@ use App\Services\FcmPushService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
@@ -72,6 +73,20 @@ class TaskController extends Controller
         return response()->json($this->payload($task->load(['department', 'assignee', 'creator', 'comments.user', 'attachments']))); 
     }
 
+    public function downloadAttachment(Request $request, Task $task, TaskAttachment $attachment)
+    {
+        abort_unless($attachment->task_id === $task->id, 404);
+        $this->authorizeView($request->user(), $task);
+
+        abort_unless(Storage::disk('local')->exists($attachment->file_path), 404);
+
+        return Storage::disk('local')->download(
+            $attachment->file_path,
+            $attachment->file_name,
+            ['X-Content-Type-Options' => 'nosniff']
+        );
+    }
+
     public function store(Request $request)
     {
         try {
@@ -120,6 +135,9 @@ class TaskController extends Controller
                         'message' => 'Unauthorized: You can only assign tasks to yourself or your direct reporting subordinates.'
                     ], 403);
                 }
+            }
+            if (isset($data['assigned_to']) && User::whereKey($data['assigned_to'])->where('status', 'active')->doesntExist()) {
+                return response()->json(['message' => 'Tasks can only be assigned to active users.'], 422);
             }
 
             $attachment = $request->file('attachment'); 
@@ -208,6 +226,9 @@ class TaskController extends Controller
             return response()->json([
                 'message' => 'Unauthorized: You can only assign tasks to yourself or your direct reporting subordinates.'
             ], 403);
+        }
+        if (isset($data['assigned_to']) && User::whereKey($data['assigned_to'])->where('status', 'active')->doesntExist()) {
+            return response()->json(['message' => 'Tasks can only be assigned to active users.'], 422);
         }
 
         if (array_key_exists('status', $data)) {
@@ -328,7 +349,7 @@ class TaskController extends Controller
 
     private function saveAttachment(Task $task, $file, $userId): void 
     { 
-        $path = $file->store('tasks/' . $task->id, 'public'); 
+        $path = $file->store('tasks/' . $task->id, 'local');
         TaskAttachment::create([
             'task_id' => $task->id,
             'uploaded_by' => $userId,

@@ -3,6 +3,9 @@
         Options -MultiViews -Indexes
     </IfModule>
     RewriteEngine On
+    RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,NC,L]
+    RewriteRule \.(?:env|log|sql|dump|bak|old)$ - [F,NC,L]
+    RewriteRule ^storage/tasks(?:/|$) - [F,NC,L]
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
     RewriteCond %{REQUEST_FILENAME} !-d

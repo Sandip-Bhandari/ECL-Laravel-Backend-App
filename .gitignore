@@ -8,5 +8,17 @@
 .env
 .env.backup
 .env.production
+.env.*
+!.env.example
+*.sql
+*.dump
+*.sqlite
+*.db
+*.log
+/storage/app/private/
+/storage/app/firebase/*.json
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
 .phpunit.cache
 .ecl-tms-firebase-adminsdk-fbsvc-e07358a715.json

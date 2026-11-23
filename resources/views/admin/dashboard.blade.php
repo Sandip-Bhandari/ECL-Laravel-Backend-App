@@ -507,7 +507,7 @@
     }
 
     async function removeEmployee(employeeId) {
-        if (!window.confirm('Remove this employee account? This cannot be undone.')) return;
+        if (!window.confirm('Deactivate this employee account? Existing tasks and messages will be preserved.')) return;
         try {
             const response = await apiFetch(`/api/employees/${employeeId}`, { method: 'DELETE' });
             const result = await response.json();

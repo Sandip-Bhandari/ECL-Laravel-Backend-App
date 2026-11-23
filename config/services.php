@@ -2,7 +2,7 @@
 
 return [
     'ecl' => [
-        'allow_email_only_employee_login' => env('ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN', false),
+        'api_base_url' => env('API_BASE_URL'),
     ],
     'postmark' => ['token' => env('POSTMARK_TOKEN')],
     'resend' => ['key' => env('RESEND_KEY')],

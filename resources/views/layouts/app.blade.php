@@ -410,6 +410,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @include('partials.api-config')
     <script>
         let currentWebTaskId = null;
         let webTaskRefreshTimer = null;
@@ -466,7 +467,7 @@
             if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
                 headers['Content-Type'] = 'application/json';
             }
-            const response = await fetch(url, { ...options, headers });
+            const response = await fetch(window.eclApiUrl(url), { ...options, headers });
             if (response.status === 401) {
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('user_info');

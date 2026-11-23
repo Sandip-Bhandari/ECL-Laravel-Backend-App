@@ -434,6 +434,7 @@
         </div>
     </div>
 
+    @include('partials.api-config')
     <script>
     let currentRole = 'employee';
 
@@ -442,8 +443,8 @@
         document.getElementById('btnEmp').classList.toggle('active', role === 'employee');
         document.getElementById('btnAdmin').classList.toggle('active', role === 'admin');
         const password = document.getElementById('password');
-        password.required = role === 'admin';
-        password.placeholder = role === 'admin' ? 'Enter your password' : 'Password (if enabled)';
+        password.required = true;
+        password.placeholder = 'Enter your password';
     }
     setRole('employee');
 
@@ -460,7 +461,7 @@
         btnSpinner.classList.remove('d-none');
 
         try {
-            const response = await fetch('/api/login', {
+            const response = await fetch(window.eclApiUrl('/api/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

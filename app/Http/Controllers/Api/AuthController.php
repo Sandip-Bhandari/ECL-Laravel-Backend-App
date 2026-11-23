@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'email'     => 'required|email',
-            'password'  => 'nullable|string',
+            'password'  => 'required|string',
             'fcm_token' => 'nullable|string|max:2048',
         ]);
 
@@ -28,15 +28,8 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
         
-        $roles = $user ? array_map('trim', explode(',', $user->role)) : [];
-        $isEmployeeOnly = in_array('employee', $roles) && !in_array('admin', $roles);
-        $emailOnlyLoginAllowed = config('services.ecl.allow_email_only_employee_login')
-            && $isEmployeeOnly
-            && empty($data['password']);
-
-        if (!$emailOnlyLoginAllowed && (
-            empty($data['password']) || !Hash::check($data['password'], (string) $user->password)
-        )) {
+        $roles = array_map('trim', explode(',', $user->role));
+        if (!Hash::check($data['password'], (string) $user->password)) {
             throw ValidationException::withMessages(['email' => 'Invalid email or password.']);
         }
 
@@ -50,7 +43,7 @@ class AuthController extends Controller
         }
 
         // Roles ko array mein convert karein (e.g., "admin,employee" -> ['admin', 'employee'])
-        $isAdmin = in_array('admin', $roles);
+        $isAdmin = count(array_intersect($roles, ['admin', 'super_admin'])) > 0;
         $isEmployee = in_array('employee', $roles);
         $isDualRole = count($roles) > 1 || ($user->is_dual_role ?? false);
 
@@ -77,7 +70,7 @@ class AuthController extends Controller
             'admin_token'      => $adminToken,            // Dual-role admin token
             'employee_token'   => $employeeToken,         // Dual-role employee token
             'role'             => $user->role,          
-            'has_admin_access' => $isAdmin || str_contains($user->role, 'manager'),
+            'has_admin_access' => $isAdmin || in_array('manager', $roles, true),
             'is_dual_role'     => $isDualRole,          
             'user'             => $this->userPayload($user)
         ], 200);

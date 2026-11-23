@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Department;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
@@ -52,7 +53,7 @@ class EmployeeController extends Controller
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
-                'password' => 'nullable|string|min:8',
+                'password' => 'required|string|min:12',
                 'phone' => 'nullable|string|max:30',
                 'designation' => 'nullable|string|max:255',
                 'department' => 'nullable|string|max:255',
@@ -62,10 +63,7 @@ class EmployeeController extends Controller
                 'parent_id' => 'nullable|integer|exists:users,id',
             ]);
 
-            $passwordInput = $request->filled('password')
-                ? $request->input('password')
-                : str()->password(16);
-            $data['password'] = Hash::make($passwordInput);
+            $data['password'] = Hash::make($data['password']);
             
             $data['status'] = 'active';
             $currentUser = $request->user();
@@ -130,7 +128,7 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($employee->id)],
-            'password' => 'nullable|string|min:8',
+            'password' => 'sometimes|required|string|min:12',
             'phone' => 'nullable|string|max:30',
             'designation' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
@@ -142,6 +140,10 @@ class EmployeeController extends Controller
 
         if (isset($data['role']) && !in_array($data['role'], $this->creatableRoles($currentUser), true)) {
             return response()->json(['message' => 'You are not authorized to assign this role.'], 403);
+        }
+
+        if ($employee->id === $currentUser->id && ($data['status'] ?? null) === 'inactive') {
+            return response()->json(['message' => 'You cannot deactivate your own account.'], 422);
         }
 
         if (isset($data['role']) && $data['role'] === 'admin,employee') {
@@ -166,7 +168,17 @@ class EmployeeController extends Controller
             $data['password'] = $data['password'] ? Hash::make($data['password']) : $employee->password; 
         }
         
-        $employee->update($data);
+        $deactivating = ($data['status'] ?? null) === 'inactive'
+            && $employee->status !== 'inactive';
+
+        DB::transaction(function () use ($employee, $data, $deactivating) {
+            $employee->update($data);
+
+            if ($deactivating) {
+                $employee->tokens()->delete();
+            }
+        });
+
         return response()->json([
             'message' => 'Staff profile updated.', 
             'user' => $this->payload($employee->fresh())
@@ -185,8 +197,12 @@ class EmployeeController extends Controller
             return response()->json(['message' => 'Unauthorized: You can only remove your direct subordinates.'], 403);
         }
 
-        $employee->delete(); 
-        return response()->json(['message' => 'Staff profile removed.']); 
+        DB::transaction(function () use ($employee) {
+            $employee->update(['status' => 'inactive']);
+            $employee->tokens()->delete();
+        });
+
+        return response()->json(['message' => 'Staff account deactivated.']);
     }
 
     private function payload(User $u): array 
@@ -224,7 +240,7 @@ class EmployeeController extends Controller
         }
 
         if ($this->hasRole($currentUser, 'admin')) {
-            return ['admin', 'manager', 'employee', 'admin,employee'];
+            return ['manager', 'employee'];
         }
 
         if ($this->hasRole($currentUser, 'manager')) {

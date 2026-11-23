@@ -8,7 +8,7 @@ Backend for the ECL Android app built with Kotlin + Jetpack Compose.
 - PHP 8.3+
 - MySQL 8+
 - Laravel Sanctum bearer tokens
-- Public task attachment storage
+- Private task attachment storage with authenticated downloads
 
 Laravel documents mobile clients as an API-backend use case and recommends Sanctum for mobile API token authentication. See the official Laravel documentation: https://laravel.com/docs/13.x and https://laravel.com/docs/12.x/sanctum.
 
@@ -52,9 +52,9 @@ For a physical phone, use the PC's LAN IP, e.g. `http://192.168.1.10:8000/api/`,
 
 ## 3. Seed accounts
 
-The database seeder is for local development only and is blocked in production. It generates random passwords unless `SEED_ADMIN_PASSWORD` and `SEED_USER_PASSWORD` are set in the local `.env`; do not commit or share those values. Rotate any credentials that were previously exposed.
+The database seeder is for local development only and is blocked in production. It creates seed accounts with random passwords unless `SEED_ADMIN_PASSWORD` and `SEED_USER_PASSWORD` are set in the local `.env`; seed runs do not erase or overwrite existing users, tasks, or departments. Do not commit or share those values. Rotate any credentials that were previously exposed.
 
-If `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN=true`, employee login accepts the official email without a password to match the current Android UI. **For production, set it to false and add a password field or an OTP flow.**
+Every login requires a password; OTP login is not used. New and updated passwords must be at least 12 characters. Existing users should rotate any weak or previously exposed passwords.
 
 ## 4. Main endpoints
 
@@ -73,18 +73,19 @@ If `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN=true`, employee login accepts the official e
 - `GET /api/notifications`
 - `POST /api/notifications/{id}/read`
 - `POST /api/device-token`
+- `GET /api/tasks/{task}/attachments/{attachment}` (task participant/admin only)
 
 ### Admin only
 - `GET /api/dashboard`
-- `POST /api/tasks`
-- `PUT /api/tasks/{id}`
-- `DELETE /api/tasks/{id}`
+- `POST /api/admin/tasks`
+- `PUT /api/admin/tasks/{id}`
+- `DELETE /api/admin/tasks/{id}`
 - `POST /api/employees`
 - `PUT /api/employees/{id}`
 - `DELETE /api/employees/{id}`
 
 ### Employee only
-- `PUT /api/my/tasks/{id}`
+- `PUT /api/employee/tasks/{id}`
 
 ## 5. Authentication header
 
@@ -111,28 +112,35 @@ JSON version:
 ```
 
 For a file attachment, send `multipart/form-data` with the same fields plus `attachment`.
+Attachment URLs require the same `Authorization: Bearer` header and are limited to users who can view the task.
 
 ## 7. Android integration
 
-Your current Retrofit base URL is:
+For the deployed API, use this base URL in Android:
 
-`http://172.18.221.130:8000/api/`
+`https://eclnet.co.in/test-backend/public/api/`
 
-Replace that with the actual PC/server IP where this Laravel project is running.
+For local development, set `API_BASE_URL` in the website's `.env` to the same API host used by Android. The website and app then use the same API and data. Leave it empty to use the local Laravel API; set it to the deployed URL only when you intend to use live data.
 
 The Android project uses Firebase Cloud Messaging. Place the Firebase Android config at `ECLAPP/app/google-services.json` and use the same Firebase project for the backend's Firebase Admin SDK credentials. The backend service-account JSON is private and must not be committed; set its path with `FIREBASE_CREDENTIALS` in the backend `.env`.
 
-The app's login calls `POST /api/login` and stores the returned Sanctum token. Employee email-only login is controlled by `ALLOW_EMAIL_ONLY_EMPLOYEE_LOGIN`; keep it disabled in production and use password authentication. The app registers its FCM token after successful login.
+The app's login calls `POST /api/login` and stores the returned Sanctum token. Password authentication is required for every role. The app registers its FCM token after successful login.
 
-The task assignment UI currently uses hard-coded department and employee labels. Replace these with values returned by the API so the backend can resolve valid department and assignee records; the request now sends the selected labels and a default priority.
+Task creation clients should load departments and employees from the API and submit their IDs. The backend only allows assignments to active users.
 
 ## 8. Production checklist
 
 - Use HTTPS.
-- Disable email-only employee login.
+- Set `APP_ENV=production` and `APP_DEBUG=false`.
+- Use a unique password of at least 12 characters for every account.
 - Rotate all seeded or previously exposed passwords.
+- Purge any previously committed secrets and database exports from all Git branches/tags, then force-push the cleaned history and rotate affected credentials.
+- Rotate and clear server logs that may contain previously exposed passwords.
 - Put `.env` outside source control.
+- Configure the web server document root to the project's `public` directory. When the repository directory itself is web-accessible, the root `.htaccess` denies access except under `public`.
+- For Nginx, point `root` to the project's `public` directory and deny dotfiles and `/storage/tasks/`; `.htaccess` rules do not apply to Nginx.
+- Back up existing files, then run `php artisan task-attachments:secure` to move existing public task attachments to private storage and remove their public copies. New attachments are private and require an authenticated task-participant download.
 - Use a real domain/API hostname instead of a LAN IP.
 - Configure Firebase Admin SDK credentials for Laravel push delivery.
 - Configure queue worker and scheduler for deadline alerts.
-- Restrict CORS origins instead of `*` if a browser client is later added.
+- Restrict CORS origins to trusted web origins; allow localhost only when testing the local website against the deployed API.

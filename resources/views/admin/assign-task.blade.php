@@ -241,8 +241,8 @@
 
         try {
             const [empRes, deptRes] = await Promise.all([
-                fetch('/api/employees', { headers }),
-                fetch('/api/departments', { headers })
+                fetch(window.eclApiUrl('/api/employees'), { headers }),
+                fetch(window.eclApiUrl('/api/departments'), { headers })
             ]);
 
             if (empRes.ok) {
