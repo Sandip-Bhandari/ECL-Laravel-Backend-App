@@ -74,81 +74,102 @@
         box-shadow: 0 0 15px rgba(229, 183, 46, 0.3);
     }
 
-    /* Collapsible Frosted Glass Sidebar */
-    .sidebar-wrapper {
-        padding: 20px 14px;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .frosted-sidebar {
-        width: 260px;
-        background: rgba(18, 24, 31, 0.4) !important;
-        backdrop-filter: blur(22px) saturate(160%) !important;
-        -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
-        border-radius: 20px !important;
-        min-height: calc(100vh - 96px);
-        padding: 16px 12px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-    }
-
     /* Toggle Button Area */
     .sidebar-toggle-btn {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #f8fafc;
         width: 40px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s ease;
-        margin-bottom: 15px;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
     }
 
     .sidebar-toggle-btn:hover {
-        background: rgba(229, 183, 46, 0.2);
-        border-color: rgba(229, 183, 46, 0.4);
+        background: rgba(229, 183, 46, 0.22);
+        border-color: rgba(229, 183, 46, 0.5);
         color: #e5b72e;
+        transform: translateY(-1px);
+    }
+
+    .sidebar-toggle-btn:active {
+        transform: scale(0.96);
     }
 
     /* Transparent Menu Links */
     .sidebar-link {
+        position: relative;
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 11px 14px;
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba(255, 255, 255, 0.84);
         text-decoration: none;
         font-weight: 500;
         font-size: 14px;
-        border-radius: 12px;
-        margin-bottom: 6px;
-        transition: all 0.2s ease;
-        background: rgba(255, 255, 255, 0.03);
+        border-radius: 13px;
+        margin-bottom: 7px;
+        overflow: hidden;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        background: rgba(255, 255, 255, 0.035);
         border: 1px solid rgba(255, 255, 255, 0.08);
         white-space: nowrap;
     }
 
+    .sidebar-link i {
+        color: rgba(255, 255, 255, 0.72);
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
     .sidebar-link:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.11);
         color: #ffffff;
-        border-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.22);
+        transform: translateX(2px);
+    }
+
+    .sidebar-link:hover i {
+        color: #ffe89e;
+        transform: scale(1.05);
     }
 
     .sidebar-link.active {
-        background: rgba(229, 183, 46, 0.2) !important;
+        background: linear-gradient(90deg, rgba(229, 183, 46, 0.25) 0%, rgba(229, 183, 46, 0.09) 100%) !important;
         color: #ffe89e !important;
-        border: 1px solid rgba(229, 183, 46, 0.4);
+        border: 1px solid rgba(229, 183, 46, 0.5) !important;
         font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+    }
+
+    .sidebar-link.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 7px;
+        bottom: 7px;
+        width: 3.5px;
+        border-radius: 0 4px 4px 0;
+        background: #e5b72e;
+    }
+
+    .sidebar-link.active i {
+        color: #e5b72e !important;
+    }
+
+    body.sidebar-collapsed .sidebar-link:hover {
+        transform: none;
+    }
+
+    body.sidebar-collapsed .sidebar-link.active::before {
+        top: 6px;
+        bottom: 6px;
+        width: 3px;
     }
 
     /* Transparent User Profile Footer Box */
@@ -231,6 +252,33 @@
 
     .sidebar-footer-box .text-muted {
         color: rgba(255, 255, 255, 0.68) !important;
+    }
+
+    /* Contextual Back Action inside Main Content Area */
+    .tms-context-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: rgba(18, 24, 31, 0.65);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        color: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    }
+
+    .tms-context-back-btn:hover {
+        background: rgba(229, 183, 46, 0.2);
+        border-color: rgba(229, 183, 46, 0.5);
+        color: #ffe89e;
+        transform: translateX(-2px);
     }
 
     /* --- Notifications Read / Unread Styling --- */
@@ -320,7 +368,7 @@
         color: #64748b;
     }
 
-    /* --- Polished Task Modal, UX Metadata & WhatsApp Discussion UI --- */
+    /* --- Polished Task Modal, UX Metadata & Task Discussion UI --- */
     #webTaskModal .modal-content {
         border: 1px solid #e2e8f0;
         border-radius: 22px;
@@ -565,37 +613,31 @@
 <body>
 
     <!-- Background Video Container -->
-<div class="bg-video-container">
-    <video autoplay muted loop playsinline class="bg-video">
-        <source src="{{ asset('video/TMS_video.mp4') }}" type="video/mp4">
-        Your browser does not support HTML5 video.
-    </video>
-</div>
+    <div class="bg-video-container">
+        <video autoplay muted loop playsinline class="bg-video">
+            <source src="{{ asset('video/TMS_video.mp4') }}" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
 
-    
     <nav class="top-navbar">
-       <div class="d-flex align-items-center gap-3">
-   <div class="d-flex align-items-center gap-3">
-    <!-- Actual Logo Image from public/images/logo.png -->
-    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="height: 38px;">
-        <img src="{{ asset('images/logo.png') }}" alt="ECL Logo" style="height: 36px; width: auto; object-fit: contain;">
-    </div>
-    
-    <!-- Vertical Divider Line -->
-    <div style="width: 1px; height: 26px; background: rgba(255, 255, 255, 0.2);"></div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Actual Logo Image from public/images/logo.png -->
+            <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="height: 38px;">
+                <img src="{{ asset('images/logo.png') }}" alt="ECL Logo" style="height: 36px; width: auto; object-fit: contain;">
+            </div>
 
-    <!-- Task Management System Titles -->
-    <div class="d-flex flex-column">
-        <span class="fw-bold text-warning" style="font-size: 13px; letter-spacing: 0.2px; line-height: 1.2;">Task Management</span>
-        <span class="fw-bold text-white" style="font-size: 13px; letter-spacing: 0.3px; line-height: 1.2;">System</span>
-    </div>
-</div>
-</div>
+            <!-- Vertical Divider Line -->
+            <div style="width: 1px; height: 26px; background: rgba(255, 255, 255, 0.2);"></div>
+
+            <!-- Task Management System Titles -->
+            <div class="d-flex flex-column">
+                <span class="fw-bold text-warning" style="font-size: 13px; letter-spacing: 0.2px; line-height: 1.2;">Task Management</span>
+                <span class="fw-bold text-white" style="font-size: 13px; letter-spacing: 0.3px; line-height: 1.2;">System</span>
+            </div>
+        </div>
 
         <div class="d-flex align-items-center gap-3">
-            <button onclick="goBack()" class="btn btn-outline-light btn-sm border-0 bg-white bg-opacity-10 text-white px-3 py-2 rounded-pill fw-semibold shadow-sm" aria-label="Go back">
-                <i class="bi bi-arrow-left me-1"></i><span class="d-none d-sm-inline">Back</span>
-            </button>
             <button onclick="openNotificationsModal()" class="btn border-0 bg-white bg-opacity-10 text-white rounded-circle p-2.5 position-relative shadow-sm" style="width: 40px; height: 40px;" aria-label="Notifications">
                 <i class="bi bi-bell-fill text-warning"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notifBadge">0</span>
@@ -609,7 +651,7 @@
     <!-- Main Container -->
     <div class="container-fluid p-0">
         <div class="d-flex">
-            
+
             <!-- Collapsible Sidebar -->
             <div class="sidebar-wrapper d-none d-lg-block" id="sidebarWrapper">
                 <div class="frosted-sidebar">
@@ -620,7 +662,7 @@
                                 <i class="bi bi-list fs-4"></i>
                             </div>
                         </div>
-                        
+
                         <!-- Navigation Links -->
                         <div class="d-flex flex-column">
                             <a href="#" onclick="switchTab('overview'); return false;" id="nav-overview" class="sidebar-link active" title="Overview">
@@ -640,48 +682,53 @@
                         </div>
                     </div>
 
-                  <!-- Bottom Section: Properly Adjusted & Clean Download Card -->
-<div class="d-flex flex-column gap-2">
-    <div class="android-download-wrapper px-1">
-        <a href="/downloads/ecl-tms.apk" download class="card text-decoration-none p-2.5 android-download-card d-block">
-            <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2 overflow-hidden flex-grow-1 me-2">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 download-icon-box" style="background: rgba(25, 135, 84, 0.25); color: #2ecc71; width: 34px; height: 34px; font-size: 18px;">
-                        <i class="bi bi-android2"></i>
-                    </div>
-                    <div class="overflow-hidden w-100">
-                        <h6 class="fw-bold mb-0 text-white text-truncate" style="font-size: 12.5px; line-height: 1.2;">Download App</h6>
-                        <span class="d-block text-white-50 text-truncate" style="font-size: 9.5px; line-height: 1.2;">ECL Mobile Client</span>
-                    </div>
-                </div>
-                <div class="flex-shrink-0 text-success fs-5 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
-                    <i class="bi bi-download"></i>
-                </div>
-            </div>
-        </a>
-    </div>
+                    <!-- Bottom Section: Properly Adjusted & Clean Download Card -->
+                    <div class="d-flex flex-column gap-2">
+                        <div class="android-download-wrapper px-1">
+                            <a href="/downloads/ecl-tms.apk" download class="card text-decoration-none p-2.5 android-download-card d-block">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2 overflow-hidden flex-grow-1 me-2">
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 download-icon-box" style="background: rgba(25, 135, 84, 0.25); color: #2ecc71; width: 34px; height: 34px; font-size: 18px;">
+                                            <i class="bi bi-android2"></i>
+                                        </div>
+                                        <div class="overflow-hidden w-100">
+                                            <h6 class="fw-bold mb-0 text-white text-truncate" style="font-size: 12.5px; line-height: 1.2;">Download App</h6>
+                                            <span class="d-block text-white-50 text-truncate" style="font-size: 9.5px; line-height: 1.2;">ECL Mobile Client</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-shrink-0 text-success fs-5 d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                                        <i class="bi bi-download"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
 
-    <!-- User Profile Footer Box -->
-    <div class="sidebar-footer-box mt-1">
-        <div class="d-flex align-items-center gap-2 overflow-hidden">
-            <div class="rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 30px; height: 30px; font-size: 12px;">
-                <i class="bi bi-person-fill"></i>
-            </div>
-            <div class="user-info-text overflow-hidden">
-                <span class="fw-bold d-block text-truncate" style="font-size: 11.5px;" id="sidebarUserName">Admin User</span>
-                <span class="text-muted d-block text-truncate" style="font-size: 9px;">Active Session</span>
-            </div>
-        </div>
-        <i class="bi bi-box-arrow-right fs-5 text-warning ms-2" style="cursor: pointer;" onclick="logoutUser()" title="Logout"></i>
-    </div>
-</div>
-
+                        <!-- User Profile Footer Box -->
+                        <div class="sidebar-footer-box mt-1">
+                            <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                <div class="rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 30px; height: 30px; font-size: 12px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div class="user-info-text overflow-hidden">
+                                    <span class="fw-bold d-block text-truncate" style="font-size: 11.5px;" id="sidebarUserName">Admin User</span>
+                                    <span class="text-muted d-block text-truncate" style="font-size: 9px;">Active Session</span>
+                                </div>
+                            </div>
+                            <i class="bi bi-box-arrow-right fs-5 text-warning ms-2" style="cursor: pointer;" onclick="logoutUser()" title="Logout"></i>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Content Area -->
             <div class="flex-grow-1 p-4" style="min-height: calc(100vh - 72px); overflow-y: auto;">
                 <div class="mx-auto" style="max-width: 1120px;">
+                    <div id="tmsContextBackBar" class="mb-3 d-none">
+                        <button type="button" onclick="goBack()" class="tms-context-back-btn" aria-label="Go back">
+                            <i class="bi bi-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                    </div>
                     @yield('content')
                 </div>
             </div>
@@ -777,7 +824,7 @@
                         </div>
                     </div>
 
-                    <!-- WhatsApp Task Discussion -->
+                    <!-- Task Discussion -->
                     <div class="wa-panel-box">
                         <div class="wa-panel-header">
                             <span><i class="bi bi-chat-dots-fill me-1.5"></i> Task discussion</span>
@@ -806,11 +853,34 @@
             document.body.classList.toggle('sidebar-collapsed');
         }
 
+        function getSafePreviousPath() {
+            const currentPath = window.location.pathname;
+            const previousUrl = document.referrer ? new URL(document.referrer, window.location.origin) : null;
+            const previousPath = previousUrl && previousUrl.origin === window.location.origin ? previousUrl.pathname : '';
+            const safePreviousPaths = ['/admin/dashboard', '/admin/assign-task', '/employee/dashboard'];
+            return (safePreviousPaths.includes(previousPath) && previousPath !== currentPath) ? previousPath : null;
+        }
+
+        function syncContextBackButton() {
+            const bar = document.getElementById('tmsContextBackBar');
+            if (!bar) return;
+
+            const currentPath = window.location.pathname;
+            const activeNonOverviewTab = currentPath === '/admin/dashboard' &&
+                (document.getElementById('nav-tasks')?.classList.contains('active') ||
+                 document.getElementById('nav-team')?.classList.contains('active'));
+
+            const hasSafeReferer = Boolean(getSafePreviousPath());
+            const shouldShow = Boolean(activeNonOverviewTab || hasSafeReferer || currentPath === '/admin/assign-task');
+            bar.classList.toggle('d-none', !shouldShow);
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content-sec').forEach(section => section.classList.add('d-none'));
             document.getElementById(`sec-${tabName}`)?.classList.remove('d-none');
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.id === `nav-${tabName}`));
             document.querySelectorAll('.tms-nav-btn').forEach(btn => btn.classList.toggle('active', btn.id === `btn-sec-${tabName}`));
+            syncContextBackButton();
         }
 
         function logoutUser() {
@@ -821,17 +891,26 @@
 
         function goBack() {
             const currentPath = window.location.pathname;
-            const previousUrl = document.referrer ? new URL(document.referrer, window.location.origin) : null;
-            const previousPath = previousUrl && previousUrl.origin === window.location.origin ? previousUrl.pathname : '';
-            const safePreviousPaths = ['/admin/dashboard', '/admin/assign-task', '/employee/dashboard'];
-            if (safePreviousPaths.includes(previousPath) && previousPath !== currentPath) {
+            if (currentPath === '/admin/dashboard' &&
+                (document.getElementById('nav-tasks')?.classList.contains('active') ||
+                 document.getElementById('nav-team')?.classList.contains('active'))) {
+                switchTab('overview');
+                return;
+            }
+
+            const safePreviousPath = getSafePreviousPath();
+            if (safePreviousPath) {
                 window.history.back();
                 return;
             }
+
             const fallbackPath = currentPath.startsWith('/employee/') ? '/employee/dashboard'
-                : currentPath === '/admin/dashboard' ? '/login'
-                : '/admin/dashboard';
-            window.location.assign(fallbackPath);
+                : currentPath === '/admin/assign-task' ? '/admin/dashboard'
+                : null;
+
+            if (fallbackPath) {
+                window.location.assign(fallbackPath);
+            }
         }
 
         function escapeHtml(value) {
@@ -1052,6 +1131,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            syncContextBackButton();
             const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
             if (userInfo.name) document.getElementById('sidebarUserName').textContent = userInfo.name;
             if (localStorage.getItem('auth_token')) {
@@ -1119,6 +1199,7 @@
             if (window.eclViewRole === 'employee') {
                 document.querySelectorAll('#nav-team, #nav-overview').forEach(element => element.classList.add('d-none'));
                 document.getElementById('nav-tasks')?.classList.add('active');
+                syncContextBackButton();
             }
         });
     </script>

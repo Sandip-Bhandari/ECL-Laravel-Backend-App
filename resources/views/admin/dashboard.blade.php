@@ -93,21 +93,302 @@
     transform: scale(1.1);
 }
 
-.filter-chip { 
-    border: 1px solid rgba(255, 255, 255, 0.4) !important; 
-    background: rgba(255, 255, 255, 0.85) !important; 
-    color: #526071 !important; 
-    border-radius: 10px !important; 
-    padding: 8px 18px; 
-    font-weight: 600; 
+/* Single-Line Task Management Banner */
+.ecl-tms-page .card.tms-ops-banner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 14px;
+    background: rgba(18, 24, 31, 0.82) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    padding: 18px 22px !important;
+}
+
+@media (min-width: 576px) {
+    .ecl-tms-page .card.tms-ops-banner {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+}
+
+.tms-ops-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background: rgba(229, 183, 46, 0.18);
+    color: #e5b72e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.tms-new-task-btn {
+    background: linear-gradient(135deg, #e5b72e 0%, #b88a14 100%) !important;
+    color: #12181f !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: 10px 20px !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 6px 18px rgba(229, 183, 46, 0.25);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.tms-new-task-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(229, 183, 46, 0.38);
+}
+
+.tms-search-box .form-control {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    border-radius: 16px !important;
+    color: #0f172a !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+.tms-search-box .form-control:focus {
+    background: #ffffff !important;
+    border-color: #e5b72e !important;
+    box-shadow: 0 0 0 3px rgba(229, 183, 46, 0.2) !important;
+}
+
+/* Responsive Filter Chips Row */
+.tms-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.tms-filter-row .filter-chip { 
+    border: 1px solid rgba(255, 255, 255, 0.35) !important; 
+    background: rgba(255, 255, 255, 0.9) !important; 
+    color: #334155 !important; 
+    border-radius: 999px !important; 
+    padding: 7px 15px !important; 
+    font-size: 12.5px !important;
+    font-weight: 600 !important; 
     cursor: pointer; 
-    transition: all 0.2s; 
+    transition: all 0.18s ease; 
     white-space: nowrap;
 }
-.filter-chip.active { 
-    background: #202a33 !important; 
-    border-color: #202a33 !important; 
-    color: #fff !important; 
+
+.tms-filter-row .filter-chip:hover {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    transform: translateY(-1px);
+}
+
+.tms-filter-row .filter-chip.active { 
+    background: #12181f !important; 
+    border-color: #e5b72e !important; 
+    color: #ffe89e !important; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+/* Task Directory Cards */
+.tms-dir-card {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #0d6efd !important;
+    border-radius: 16px !important;
+    padding: 15px 18px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.tms-dir-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.tms-dir-card.is-completed { border-left-color: #198754 !important; }
+.tms-dir-card.is-pending { border-left-color: #eab308 !important; }
+.tms-dir-card.is-approval { border-left-color: #0dcaf0 !important; }
+.tms-dir-card.is-overdue { border-left-color: #dc3545 !important; }
+
+.tms-dir-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 3px;
+}
+
+.tms-dir-desc {
+    font-size: 12.5px;
+    color: #64748b;
+    margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.tms-dir-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    font-size: 12px;
+    color: #475569;
+}
+
+/* Official Team & Workforce Styling */
+.ecl-tms-page .card.team-kpi-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    border-radius: 18px !important;
+    padding: 20px 22px !important;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.ecl-tms-page .card.team-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5px;
+}
+
+.ecl-tms-page .card.team-kpi-workforce::before {
+    background: linear-gradient(90deg, #12181f 0%, #e5b72e 100%);
+}
+
+.ecl-tms-page .card.team-kpi-depts::before {
+    background: linear-gradient(90deg, #075e54 0%, #169b61 100%);
+}
+
+.ecl-tms-page .card.team-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16) !important;
+    border-color: rgba(229, 183, 46, 0.55) !important;
+}
+
+.team-kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.team-action-primary {
+    background: linear-gradient(135deg, #12181f 0%, #24303d 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(229, 183, 46, 0.35) !important;
+    border-radius: 14px !important;
+    padding: 13px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.team-action-primary:hover {
+    transform: translateY(-2px);
+    color: #ffe89e !important;
+    border-color: #e5b72e !important;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.24) !important;
+}
+
+.team-action-secondary {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(226, 232, 240, 0.95) !important;
+    border-radius: 14px !important;
+    padding: 13px 18px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.team-action-secondary:hover {
+    transform: translateY(-2px);
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #e5b72e !important;
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.15) !important;
+}
+
+.ecl-tms-page .card.team-member-card {
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid #e2e8f0 !important;
+    border-left: 4px solid #169b61 !important;
+    border-radius: 16px !important;
+    padding: 15px 18px !important;
+    margin-bottom: 12px !important;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.ecl-tms-page .card.team-member-card.is-inactive {
+    border-left-color: #94a3b8 !important;
+    opacity: 0.9;
+}
+
+.ecl-tms-page .card.team-member-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.14) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.team-avatar-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #12181f 0%, #273444 100%);
+    color: #ffe89e;
+    border: 1px solid rgba(229, 183, 46, 0.45);
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.team-meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.team-icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }
 </style>
 
@@ -123,7 +404,7 @@
                     <div class="rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="background: #FDF3D6; color: #B2820A; width: 36px; height: 36px; font-size: 17px;">
                         <i class="bi bi-graph-up-arrow"></i>
                     </div>
-                    <h6 class="fw-bold m-0 text-dark" style="font-size: 16px; letter-spacing: -0.2px;">Tasks Analytics & Overview</h6>
+                    <h6 class="fw-bold m-0 text-dark" style="font-size: 16px; letter-spacing: -0.2px;">Tasks Analytics &amp; Overview</h6>
                 </div>
                 <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-3 py-1.5 rounded-pill" style="font-size: 11px;"><i class="bi bi-circle-fill text-success me-1.5" style="font-size: 8px;"></i> Live Status</span>
             </div>
@@ -197,7 +478,7 @@
                         </div>
                         <div>
                             <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">New Task</h6>
-                            <small class="text-muted" style="font-size: 11.5px;">Create & assign task</small>
+                            <small class="text-muted" style="font-size: 11.5px;">Create &amp; assign task</small>
                         </div>
                     </div>
                     <i class="bi bi-arrow-right-circle-fill text-warning fs-5 opacity-75"></i>
@@ -239,28 +520,28 @@
 
     <!-- 2. TASKS TAB SECTION -->
     <div id="sec-tasks" class="tab-content-sec d-none">
-        <!-- Professional Horizontal Task Header Banner -->
-        <div class="card border-0 shadow-sm text-white d-flex flex-row justify-content-between align-items-center mb-4 p-4 rounded-4" style="background: rgba(18, 24, 31, 0.75) !important; backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.12) !important;">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style="background: rgba(229, 183, 46, 0.2); color: #e5b72e; width: 42px; height: 42px; font-size: 20px;">
+        <!-- Single-Line Task Management Header Banner -->
+        <div class="card tms-ops-banner text-white mb-3">
+            <div class="d-flex align-items-center gap-3 min-w-0">
+                <div class="tms-ops-icon">
                     <i class="bi bi-journal-plus"></i>
                 </div>
-                <div>
-                    <h5 class="fw-bold mb-1 text-white" style="font-size: 17px; letter-spacing: 0.2px;">Task Management & Operations</h5>
-                    <p class="opacity-75 mb-0" style="font-size: 12px; color: rgba(255, 255, 255, 0.7);">Allocate new operational responsibilities & set strict deadlines</p>
+                <div class="min-w-0">
+                    <h5 class="fw-bold mb-0.5 text-white" style="font-size: 17px; letter-spacing: 0.2px;">Task Management &amp; Operations</h5>
+                    <p class="mb-0 text-truncate" style="font-size: 12px; color: rgba(255, 255, 255, 0.72);">Allocate new operational responsibilities &amp; set strict deadlines</p>
                 </div>
             </div>
-            <button class="btn fw-bold px-4 py-2.5 rounded-pill shadow-sm flex-shrink-0 d-flex align-items-center gap-2" onclick="openCreateTaskModal()" style="background: linear-gradient(135deg, #e5b72e 0%, #b88a14 100%); color: #12181f; font-size: 13.5px;">
+            <button type="button" class="btn tms-new-task-btn" onclick="openCreateTaskModal()">
                 <i class="bi bi-plus-lg"></i> New Task
             </button>
         </div>
 
-        <div class="position-relative mb-3">
+        <div class="position-relative tms-search-box mb-3">
             <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-            <input type="text" id="searchInput" class="form-control ps-5 py-3 shadow-none rounded-4" placeholder="Search tasks by title or description..." style="font-size: 13.5px;">
+            <input type="text" id="searchInput" class="form-control ps-5 py-3 shadow-none" placeholder="Search tasks by title or description..." style="font-size: 13.5px;">
         </div>
 
-        <div class="d-flex gap-2 overflow-auto pb-2 mb-4">
+        <div class="tms-filter-row">
             <span class="filter-chip active shadow-sm" onclick="filterTasks('all', this)">All</span>
             <span class="filter-chip shadow-sm" onclick="filterTasks('Pending', this)">Pending</span>
             <span class="filter-chip shadow-sm" onclick="filterTasks('In Progress', this)">In Progress</span>
@@ -269,7 +550,7 @@
             <span class="filter-chip shadow-sm" onclick="filterTasks('Overdue', this)">Overdue</span>
         </div>
 
-        <h6 class="ecl-section-title mb-3 px-1">Tasks & Operations Directory</h6>
+        <h6 class="ecl-section-title mb-3 px-1">Tasks &amp; Operations Directory</h6>
         <div id="taskListContainer">
             <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading tasks...</p>
         </div>
@@ -278,30 +559,46 @@
     <!-- 3. TEAM TAB SECTION -->
     <div id="sec-team" class="tab-content-sec d-none">
         <div class="row g-3 mb-4">
-            <div class="col-6">
-                <div class="card border-0 shadow-sm text-center p-4 rounded-4 bg-white">
-                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Total Workforce</small>
-                    <h3 class="fw-bold m-0 text-dark" id="statTeamTotal">0</h3>
+            <div class="col-sm-6">
+                <div class="card team-kpi-card team-kpi-workforce d-flex flex-row align-items-center justify-content-between gap-3 h-100">
+                    <div>
+                        <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.7px;">Total Workforce</small>
+                        <h3 class="fw-bold m-0 text-dark fs-2 lh-1" id="statTeamTotal">0</h3>
+                    </div>
+                    <div class="team-kpi-icon" style="background: #FDF3D6; color: #B2820A;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
                 </div>
             </div>
-            <div class="col-6">
-                <div class="card border-0 shadow-sm text-center p-4 rounded-4 bg-white">
-                    <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 11px; letter-spacing: 0.5px;">Active Departments</small>
-                    <h3 class="fw-bold m-0 text-dark" id="statDeptsTotal">0</h3>
+            <div class="col-sm-6">
+                <div class="card team-kpi-card team-kpi-depts d-flex flex-row align-items-center justify-content-between gap-3 h-100">
+                    <div>
+                        <small class="text-muted fw-bold d-block text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.7px;">Active Departments</small>
+                        <h3 class="fw-bold m-0 text-dark fs-2 lh-1" id="statDeptsTotal">0</h3>
+                    </div>
+                    <div class="team-kpi-icon" style="background: #E8F5E9; color: #169b61;">
+                        <i class="bi bi-building-check"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-6">
-                <button class="btn text-white w-100 py-3 shadow-sm fw-semibold rounded-4" style="background-color: #202a33; font-size: 13.5px;" onclick="openAddEmployeeModal()"><i class="bi bi-person-plus-fill me-2"></i> Add Employee</button>
+            <div class="col-sm-6">
+                <button type="button" class="btn team-action-primary w-100 d-flex align-items-center justify-content-center gap-2" onclick="openAddEmployeeModal()">
+                    <i class="bi bi-person-plus-fill text-warning"></i>
+                    <span>Add Employee</span>
+                </button>
             </div>
-            <div class="col-6">
-                <button class="btn btn-outline-secondary w-100 py-3 shadow-sm bg-white fw-semibold text-dark rounded-4" style="border-color: #dfe4e9; font-size: 13.5px;" onclick="openAddDeptModal()"><i class="bi bi-building-add me-2 text-warning"></i> New Dept</button>
+            <div class="col-sm-6">
+                <button type="button" class="btn team-action-secondary w-100 d-flex align-items-center justify-content-center gap-2" onclick="openAddDeptModal()">
+                    <i class="bi bi-building-add text-warning"></i>
+                    <span>New Dept</span>
+                </button>
             </div>
         </div>
 
-        <h6 class="ecl-section-title mb-3 px-1">Team Directory</h6>
+        <h6 class="ecl-section-title mb-3 px-1"><i class="bi bi-person-lines-fill text-warning me-1.5"></i> Team Directory</h6>
         <div id="employeeListContainer">
             <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading team members...</p>
         </div>
@@ -485,32 +782,47 @@
     function renderTaskList(tasks) {
         const container = document.getElementById('taskListContainer');
         if (!tasks || tasks.length === 0) {
-            container.innerHTML = `<p class="text-center text-muted my-4">No tasks found.</p>`;
+            container.innerHTML = `<p class="text-center text-muted my-4 py-4 bg-white rounded-4 border shadow-sm">No tasks found.</p>`;
             return;
         }
 
         container.innerHTML = tasks.map(t => {
             const statusText = t.status || 'Pending';
             const overdue = isTaskOverdue(t);
-            const badgeClass = statusText === 'Completed' ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
-                : statusText === 'In Progress' ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'
-                : statusText === 'Approval for Completed' ? 'bg-info-subtle text-info-emphasis border border-info-subtle'
+
+            const badgeClass = statusText === 'Completed'
+                ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
+                : statusText === 'In Progress'
+                ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'
+                : statusText === 'Approval for Completed'
+                ? 'bg-info-subtle text-info-emphasis border border-info-subtle'
                 : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+
+            const stateClass = overdue
+                ? 'is-overdue'
+                : statusText === 'Completed'
+                ? 'is-completed'
+                : statusText === 'Approval for Completed'
+                ? 'is-approval'
+                : statusText === 'Pending'
+                ? 'is-pending'
+                : '';
+
             return `
-                <button type="button" class="card text-start border-0 shadow-sm mb-3 p-3 rounded-4 bg-white w-100" onclick="openTaskDetails(${Number(t.id)})">
+                <button type="button" class="tms-dir-card ${stateClass} text-start w-100" onclick="openTaskDetails(${Number(t.id)})">
                     <div class="d-flex justify-content-between align-items-start gap-2">
-                        <div>
-                            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">${escapeHtml(t.title)}</h6>
-                            <p class="text-muted mb-2 small" style="font-size: 12.5px;">${escapeHtml(t.description || 'No description provided.')}</p>
+                        <div class="min-w-0">
+                            <div class="tms-dir-title text-truncate">${escapeHtml(t.title)}</div>
+                            <p class="tms-dir-desc">${escapeHtml(t.description || 'No description provided.')}</p>
                         </div>
                         <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
                             ${overdue ? `<span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-2.5 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">Overdue</span>` : ''}
                             <span class="badge ${badgeClass} px-3 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">${escapeHtml(statusText)}</span>
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center text-muted pt-2.5 border-top mt-2" style="font-size: 12px;">
+                    <div class="tms-dir-meta">
                         <span><i class="bi bi-person-fill me-1 text-dark"></i>${escapeHtml(t.assigned_employee || 'Unassigned')}</span>
-                        <span><i class="bi bi-calendar-event me-1 ${overdue ? 'text-danger' : 'text-warning'}"></i>${escapeHtml(t.due_date || 'No deadline')}</span>
+                        <span class="${overdue ? 'text-danger fw-semibold' : ''}"><i class="bi bi-calendar-event me-1 ${overdue ? 'text-danger' : 'text-warning'}"></i>${escapeHtml(t.due_date || 'No deadline')}</span>
                     </div>
                 </button>
             `;
@@ -563,30 +875,39 @@
     function renderEmployeeList(employees) {
         const container = document.getElementById('employeeListContainer');
         if (!employees || employees.length === 0) {
-            container.innerHTML = `<p class="text-center text-muted my-4">No team members found.</p>`;
+            container.innerHTML = `<p class="text-center text-muted my-4 py-4 bg-white rounded-4 border shadow-sm">No team members found.</p>`;
             return;
         }
 
-        container.innerHTML = employees.map(emp => `
-            <div class="card border-0 shadow-sm mb-3 p-3 rounded-4 bg-white d-flex align-items-center justify-content-between flex-row gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-circle bg-light text-dark fw-bold border d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; font-size: 16px;">${escapeHtml((emp.name || 'E').charAt(0).toUpperCase())}</div>
-                    <div>
-                        <h6 class="fw-bold mb-0 text-dark" style="font-size: 14.5px;">${escapeHtml(emp.name)}</h6>
-                        <small class="text-muted d-block" style="font-size: 12px;">${escapeHtml(emp.designation || 'Employee')} &bull; ${escapeHtml(emp.department || 'General')} &bull; ${escapeHtml(emp.email || '')}</small>
+        container.innerHTML = employees.map(emp => {
+            const isInactive = emp.status === 'inactive';
+            const statusLabel = emp.status || 'active';
+
+            return `
+                <div class="card team-member-card ${isInactive ? 'is-inactive' : ''} d-flex align-items-center justify-content-between flex-row gap-3">
+                    <div class="d-flex align-items-center gap-3 min-w-0">
+                        <div class="team-avatar-badge">${escapeHtml((emp.name || 'E').charAt(0).toUpperCase())}</div>
+                        <div class="min-w-0">
+                            <h6 class="fw-bold mb-0 text-dark text-truncate" style="font-size: 14.5px;">${escapeHtml(emp.name)}</h6>
+                            <div class="team-meta-strip">
+                                <span><i class="bi bi-briefcase me-1 text-secondary"></i>${escapeHtml(emp.designation || 'Employee')}</span>
+                                <span><i class="bi bi-building me-1 text-secondary"></i>${escapeHtml(emp.department || 'General')}</span>
+                                ${emp.email ? `<span class="text-truncate"><i class="bi bi-envelope me-1 text-secondary"></i>${escapeHtml(emp.email)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <span class="badge ${isInactive ? 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' : 'bg-success-subtle text-success-emphasis border border-success-subtle'} rounded-pill px-3 py-1.5" style="font-size: 11px; font-weight: 600;">${escapeHtml(statusLabel)}</span>
+                        <button class="btn btn-sm btn-outline-secondary team-icon-btn" type="button" title="${isInactive ? 'Activate' : 'Deactivate'} account"
+                            onclick="toggleEmployeeStatus(${Number(emp.id)}, '${isInactive ? 'active' : 'inactive'}')">
+                            <i class="bi ${isInactive ? 'bi-person-check' : 'bi-person-dash'}"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger team-icon-btn" type="button" title="Remove employee"
+                            onclick="removeEmployee(${Number(emp.id)})"><i class="bi bi-trash"></i></button>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge ${emp.status === 'inactive' ? 'text-bg-secondary' : 'text-bg-success'} rounded-pill">${escapeHtml(emp.status || 'active')}</span>
-                    <button class="btn btn-sm btn-outline-secondary" type="button" title="${emp.status === 'inactive' ? 'Activate' : 'Deactivate'} account"
-                        onclick="toggleEmployeeStatus(${Number(emp.id)}, '${emp.status === 'inactive' ? 'active' : 'inactive'}')">
-                        <i class="bi ${emp.status === 'inactive' ? 'bi-person-check' : 'bi-person-dash'}"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" type="button" title="Remove employee"
-                        onclick="removeEmployee(${Number(emp.id)})"><i class="bi bi-trash"></i></button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     function switchTab(tabName) {
