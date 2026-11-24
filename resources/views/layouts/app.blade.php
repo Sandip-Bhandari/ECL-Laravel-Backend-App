@@ -224,7 +224,343 @@
         justify-content: center;
         padding: 10px 0;
     }
-</style>
+
+    .flex-grow-1 {
+        min-width: 0 !important;
+    }
+
+    .sidebar-footer-box .text-muted {
+        color: rgba(255, 255, 255, 0.68) !important;
+    }
+
+    /* --- Notifications Read / Unread Styling --- */
+    #webNotificationsModal .modal-content {
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+        background: #ffffff;
+    }
+
+    .web-notif-top-bar {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, #e5b72e 0%, #075e54 55%, #128c7e 100%);
+    }
+
+    #webNotificationsModal .modal-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 14px 18px;
+    }
+
+    .web-notif-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        background: #fef3c7;
+        color: #b45309;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    #webNotificationsModal .modal-body {
+        background: #f8fafc;
+        padding: 14px 16px;
+        max-height: 410px;
+        overflow-y: auto;
+    }
+
+    .web-notif-card {
+        width: 100%;
+        text-align: left;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #ffffff;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    .web-notif-card + .web-notif-card {
+        margin-top: 10px;
+    }
+
+    .web-notif-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
+    }
+
+    .web-notif-card.is-unread {
+        background: #fffbeb;
+        border-color: #fde68a;
+        border-left: 4px solid #d97706;
+    }
+
+    .web-notif-card.is-read {
+        background: #ffffff;
+        opacity: 0.82;
+    }
+
+    .web-unread-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #d97706;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    .web-notif-time {
+        font-size: 11px;
+        color: #64748b;
+    }
+
+    /* --- Polished Task Modal, UX Metadata & WhatsApp Discussion UI --- */
+    #webTaskModal .modal-content {
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 26px 64px rgba(15, 23, 42, 0.32);
+        background: #ffffff;
+    }
+
+    .tms-modal-top-bar {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, #075e54 0%, #128c7e 55%, #e5b72e 100%);
+    }
+
+    #webTaskModal .modal-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 16px 22px;
+    }
+
+    #webTaskModal .modal-body {
+        padding: 18px 22px 22px;
+        background: #ffffff;
+    }
+
+    .tms-ux-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    @media (min-width: 768px) {
+        .tms-ux-meta-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    .tms-ux-meta-cell {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .tms-ux-meta-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #64748b;
+    }
+
+    .tms-ux-meta-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .tms-ux-detail-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #075e54;
+        border-radius: 14px;
+        padding: 12px 15px;
+    }
+
+    .tms-ux-detail-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #64748b;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    #webTaskDescription.tms-ux-detail-text {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: #1e293b;
+        white-space: pre-line;
+    }
+
+    .tms-ux-status-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 11px 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+    }
+
+    .wa-panel-box {
+        background-color: #efeae2;
+        background-image: radial-gradient(rgba(17, 27, 33, 0.055) 1px, transparent 0);
+        background-size: 18px 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 12px;
+        box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+
+    .wa-panel-header {
+        background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 9px 14px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13.5px;
+        font-weight: 600;
+        box-shadow: 0 3px 10px rgba(7, 94, 84, 0.22);
+    }
+
+    #webTaskMessages.wa-messages-area {
+        height: 265px !important;
+        overflow-y: auto !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 10px !important;
+        margin-bottom: 12px !important;
+        background: rgba(255, 255, 255, 0.42) !important;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .wa-msg-line {
+        display: flex;
+        flex-direction: column;
+        max-width: 78%;
+    }
+
+    .wa-msg-line.is-mine {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .wa-msg-line.is-other {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .wa-msg-bubble {
+        padding: 8px 13px;
+        border-radius: 13px;
+        font-size: 13.5px;
+        line-height: 1.45;
+        color: #111b21;
+        box-shadow: 0 1px 2px rgba(11, 20, 26, 0.14);
+        word-break: break-word;
+    }
+
+    .wa-msg-line.is-mine .wa-msg-bubble {
+        background: #d9fdd3;
+        border-top-right-radius: 3px;
+    }
+
+    .wa-msg-line.is-other .wa-msg-bubble {
+        background: #ffffff;
+        border-top-left-radius: 3px;
+    }
+
+    .wa-msg-author {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #075e54;
+        margin-bottom: 2px;
+    }
+
+    .wa-msg-stamp {
+        font-size: 11px;
+        color: #667781;
+        margin-top: 3px;
+        padding: 0 3px;
+    }
+
+    #webTaskMessageInput.wa-input-pill {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 999px !important;
+        padding: 10px 16px !important;
+        font-size: 13.5px;
+        color: #111b21 !important;
+        box-shadow: 0 1px 3px rgba(11, 20, 26, 0.08) !important;
+    }
+
+    #webTaskMessageInput.wa-input-pill:focus {
+        border-color: #128c7e !important;
+        box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.18) !important;
+    }
+
+    .wa-send-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 50% !important;
+        background: #008069 !important;
+        border: none !important;
+        color: #ffffff !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 128, 105, 0.35);
+    }
+
+    .wa-send-btn:hover {
+        background: #017561 !important;
+    }
+
+    @media (max-width: 767.98px) {
+        .top-navbar {
+            padding: 0 14px;
+            height: 64px;
+        }
+
+        #sec-tasks .card.d-flex.flex-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px;
+        }
+    }
+    </style>
 </head>
 <body>
 
@@ -239,9 +575,6 @@
     
     <nav class="top-navbar">
        <div class="d-flex align-items-center gap-3">
-    <!-- Coal India Circular Monogram Logo Placeholder -->
-    
-
    <div class="d-flex align-items-center gap-3">
     <!-- Actual Logo Image from public/images/logo.png -->
     <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="height: 38px;">
@@ -326,7 +659,6 @@
                 </div>
             </div>
         </a>
-        
     </div>
 
     <!-- User Profile Footer Box -->
@@ -359,51 +691,103 @@
 
     <div class="modal fade" id="webNotificationsModal" tabindex="-1" aria-labelledby="webNotificationsTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 rounded-4">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold" id="webNotificationsTitle">Notifications</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="web-notif-top-bar"></div>
+                <div class="modal-header d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2.5 min-w-0">
+                        <span class="web-notif-icon-box">
+                            <i class="bi bi-bell-fill"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <h6 class="modal-title fw-bold text-dark m-0" id="webNotificationsTitle">Notifications</h6>
+                                <span class="badge rounded-pill bg-warning text-dark" id="webNotifUnreadPill" style="font-size: 10.5px;">0 Unread</span>
+                            </div>
+                            <small class="text-muted d-block text-truncate" style="font-size: 11.5px;">Click a notification to mark as read &amp; open task</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <button type="button" class="btn btn-white btn-sm border rounded-pill px-2.5 py-1 fw-semibold text-dark" style="font-size: 11.5px;" onclick="markAllWebNotificationsRead()">
+                            Mark all read
+                        </button>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                 </div>
-                <div class="modal-body" id="webNotificationsList"><p class="text-muted text-center">Loading notifications...</p></div>
+                <div class="modal-body" id="webNotificationsList">
+                    <p class="text-muted text-center my-3">Loading notifications...</p>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="webTaskModal" tabindex="-1" aria-labelledby="webTaskTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 rounded-4">
-                <div class="modal-header">
-                    <div>
-                        <h5 class="modal-title fw-bold" id="webTaskTitle">Task details</h5>
-                        <small class="text-muted" id="webTaskMeta"></small>
+            <div class="modal-content">
+                <div class="tms-modal-top-bar"></div>
+                <div class="modal-header d-flex justify-content-between align-items-start gap-3">
+                    <div class="min-w-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            <h5 class="modal-title fw-bold text-dark m-0" id="webTaskTitle">Task details</h5>
+                            <span class="badge rounded-pill text-bg-warning px-2.5 py-1" id="webTaskStatusBadge"></span>
+                        </div>
+                        <small class="text-muted d-block text-truncate" id="webTaskMeta"></small>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                        <span class="badge rounded-pill text-bg-warning" id="webTaskStatusBadge"></span>
-                        <span class="badge rounded-pill text-bg-light" id="webTaskPriority"></span>
-                        <span class="small text-muted" id="webTaskAssignee"></span>
-                        <span class="small text-muted ms-auto" id="webTaskDueDate"></span>
+                <div class="modal-body vstack gap-3">
+                    <!-- 4-Column Structured Task Metadata -->
+                    <div class="tms-ux-meta-grid">
+                        <div class="tms-ux-meta-cell">
+                            <span class="tms-ux-meta-label"><i class="bi bi-flag-fill me-1 text-warning"></i>Priority</span>
+                            <span class="tms-ux-meta-value" id="webTaskPriority">--</span>
+                        </div>
+                        <div class="tms-ux-meta-cell">
+                            <span class="tms-ux-meta-label"><i class="bi bi-person-check-fill me-1 text-primary"></i>Assigned To</span>
+                            <span class="tms-ux-meta-value" id="webTaskAssignee">--</span>
+                        </div>
+                        <div class="tms-ux-meta-cell">
+                            <span class="tms-ux-meta-label"><i class="bi bi-calendar-event-fill me-1 text-danger"></i>Deadline</span>
+                            <span class="tms-ux-meta-value text-danger" id="webTaskDueDate">--</span>
+                        </div>
+                        <div class="tms-ux-meta-cell">
+                            <span class="tms-ux-meta-label"><i class="bi bi-layers-fill me-1 text-success"></i>Task Status</span>
+                            <span class="tms-ux-meta-value" id="webTaskStatusText">--</span>
+                        </div>
                     </div>
-                    <p class="p-3 bg-light rounded-3 mb-3" id="webTaskDescription"></p>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <label for="webTaskStatusSelect" class="form-label fw-semibold mb-0">Update status</label>
-                        <select id="webTaskStatusSelect" class="form-select form-select-sm" style="max-width: 230px">
-                            <option>Pending</option>
-                            <option>In Progress</option>
-                            <option>Approval for Completed</option>
-                            <option>Completed</option>
-                        </select>
-                        <button class="btn btn-sm btn-dark" id="webTaskStatusSave" type="button">Save</button>
+
+                    <!-- Task Detail / Description -->
+                    <div class="tms-ux-detail-box">
+                        <span class="tms-ux-detail-label"><i class="bi bi-file-earmark-text me-1"></i>Task Detail</span>
+                        <p class="tms-ux-detail-text" id="webTaskDescription"></p>
                     </div>
-                    <hr>
-                    <h6 class="fw-bold"><i class="bi bi-chat-dots me-1"></i> Task discussion</h6>
-                    <div id="webTaskMessages" class="border rounded-3 p-3 mb-3 bg-light" style="height: 250px; overflow-y: auto"></div>
-                    <form id="webTaskMessageForm" class="d-flex gap-2">
-                        <input id="webTaskMessageInput" class="form-control" maxlength="5000" placeholder="Write a message..." autocomplete="off" required>
-                        <button class="btn btn-dark" type="submit" aria-label="Send message"><i class="bi bi-send"></i></button>
-                    </form>
+
+                    <!-- Update Status Bar -->
+                    <div class="tms-ux-status-bar">
+                        <label for="webTaskStatusSelect" class="form-label fw-semibold text-dark mb-0 small">
+                            <i class="bi bi-arrow-repeat me-1 text-primary"></i>Update status
+                        </label>
+                        <div class="d-flex align-items-center gap-2 ms-sm-auto">
+                            <select id="webTaskStatusSelect" class="form-select form-select-sm bg-white rounded-3" style="min-width: 195px;">
+                                <option>Pending</option>
+                                <option>In Progress</option>
+                                <option>Approval for Completed</option>
+                                <option>Completed</option>
+                            </select>
+                            <button class="btn btn-sm btn-dark rounded-3 px-3 fw-semibold" id="webTaskStatusSave" type="button">Save</button>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp Task Discussion -->
+                    <div class="wa-panel-box">
+                        <div class="wa-panel-header">
+                            <span><i class="bi bi-chat-dots-fill me-1.5"></i> Task discussion</span>
+                        </div>
+                        <div id="webTaskMessages" class="wa-messages-area"></div>
+                        <form id="webTaskMessageForm" class="d-flex align-items-center gap-2">
+                            <input id="webTaskMessageInput" class="form-control wa-input-pill" maxlength="5000" placeholder="Write a message..." autocomplete="off" required>
+                            <button class="btn wa-send-btn" type="submit" aria-label="Send message"><i class="bi bi-send-fill small"></i></button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -416,6 +800,7 @@
         let webTaskRefreshTimer = null;
         let webTaskModal;
         let webNotificationsModal;
+        let webNotificationsCache = [];
 
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
@@ -425,6 +810,7 @@
             document.querySelectorAll('.tab-content-sec').forEach(section => section.classList.add('d-none'));
             document.getElementById(`sec-${tabName}`)?.classList.remove('d-none');
             document.querySelectorAll('.sidebar-link').forEach(link => link.classList.toggle('active', link.id === `nav-${tabName}`));
+            document.querySelectorAll('.tms-nav-btn').forEach(btn => btn.classList.toggle('active', btn.id === `btn-sec-${tabName}`));
         }
 
         function logoutUser() {
@@ -452,6 +838,18 @@
             return String(value ?? '').replace(/[&<>"']/g, character => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             })[character]);
+        }
+
+        function formatReadableTimestamp(val) {
+            if (!val) return '';
+            const dt = new Date(val);
+            if (Number.isNaN(dt.getTime())) return String(val);
+            return dt.toLocaleString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         function getWebAuthHeaders(extraHeaders = {}) {
@@ -489,7 +887,7 @@
             currentWebTaskId = taskId;
             if (!webTaskModal) webTaskModal = new bootstrap.Modal(document.getElementById('webTaskModal'));
             document.getElementById('webTaskTitle').textContent = 'Loading task...';
-            document.getElementById('webTaskMessages').innerHTML = '<p class="text-muted text-center mb-0">Loading discussion...</p>';
+            document.getElementById('webTaskMessages').innerHTML = '<p class="text-muted text-center my-auto">Loading discussion...</p>';
             webTaskModal.show();
             try {
                 const response = await apiFetch(`/api/tasks/${taskId}`);
@@ -501,7 +899,7 @@
                 webTaskRefreshTimer = setInterval(() => loadWebTaskMessages(taskId), 5000);
             } catch (error) {
                 document.getElementById('webTaskTitle').textContent = 'Task unavailable';
-                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger mb-0">${escapeHtml(error.message)}</p>`;
+                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger my-auto">${escapeHtml(error.message)}</p>`;
             }
         }
 
@@ -511,10 +909,12 @@
             document.getElementById('webTaskMeta').textContent = task.department || 'No department';
             const badge = document.getElementById('webTaskStatusBadge');
             badge.textContent = task.status || 'Pending';
-            badge.className = `badge rounded-pill ${getTaskStatusClass(task.status)}`;
+            badge.className = `badge rounded-pill px-2.5 py-1 ${getTaskStatusClass(task.status)}`;
             document.getElementById('webTaskPriority').textContent = `${task.priority || 'Medium'} priority`;
-            document.getElementById('webTaskAssignee').textContent = `Assigned to: ${task.assigned_employee || 'Unassigned'}`;
-            document.getElementById('webTaskDueDate').textContent = task.due_date ? `Due: ${task.due_date}` : 'No due date';
+            document.getElementById('webTaskAssignee').textContent = task.assigned_employee || 'Unassigned';
+            document.getElementById('webTaskDueDate').textContent = task.due_date || 'No due date';
+            const statusTextEl = document.getElementById('webTaskStatusText');
+            if (statusTextEl) statusTextEl.textContent = task.status || 'Pending';
             document.getElementById('webTaskDescription').textContent = task.description || 'No description provided.';
             const statusSelect = document.getElementById('webTaskStatusSelect');
             statusSelect.value = task.status || 'Pending';
@@ -532,48 +932,104 @@
                 const messages = Array.isArray(result) ? result : (result.data || []);
                 const container = document.getElementById('webTaskMessages');
                 if (!messages.length) {
-                    container.innerHTML = '<p class="text-muted text-center mb-0">No messages yet. Start the task discussion.</p>';
+                    container.innerHTML = '<p class="text-muted text-center my-auto">No messages yet. Start the task discussion.</p>';
                     return;
                 }
                 const currentUser = JSON.parse(localStorage.getItem('user_info') || '{}');
                 container.innerHTML = messages.map(message => {
                     const mine = Number(message.user_id) === Number(currentUser.id);
-                    return `<div class="mb-2 ${mine ? 'text-end' : ''}">
-                        <div class="d-inline-block text-start rounded-3 px-3 py-2 ${mine ? 'bg-primary text-white' : 'bg-white border'}" style="max-width: 85%">
-                            <small class="d-block fw-semibold">${escapeHtml(message.user?.name || 'User')}</small>
-                            <span>${escapeHtml(message.message || '')}</span>
+                    const timeLabel = formatReadableTimestamp(message.created_at);
+                    return `<div class="wa-msg-line ${mine ? 'is-mine' : 'is-other'}">
+                        <div class="wa-msg-bubble">
+                            ${!mine ? `<div class="wa-msg-author">${escapeHtml(message.user?.name || 'User')}</div>` : ''}
+                            <div>${escapeHtml(message.message || '')}</div>
                         </div>
-                        <small class="d-block text-muted">${escapeHtml(message.created_at || '')}</small>
+                        ${timeLabel ? `<span class="wa-msg-stamp">${escapeHtml(timeLabel)}</span>` : ''}
                     </div>`;
                 }).join('');
                 container.scrollTop = container.scrollHeight;
             } catch (error) {
-                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger mb-0">${escapeHtml(error.message)}</p>`;
+                document.getElementById('webTaskMessages').innerHTML = `<p class="text-danger my-auto">${escapeHtml(error.message)}</p>`;
             }
+        }
+
+        function syncNavbarNotifBadge(unreadCount) {
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+                badge.textContent = unreadCount;
+                badge.classList.toggle('d-none', unreadCount === 0);
+            }
+
+            const pill = document.getElementById('webNotifUnreadPill');
+            if (pill) {
+                pill.textContent = `${unreadCount} Unread`;
+                pill.className = unreadCount > 0
+                    ? 'badge rounded-pill bg-warning text-dark'
+                    : 'badge rounded-pill bg-light text-muted border';
+            }
+        }
+
+        function renderWebNotificationsList(notifications) {
+            webNotificationsCache = Array.isArray(notifications) ? notifications : [];
+            const unread = webNotificationsCache.filter(notification => !notification.is_read).length;
+            syncNavbarNotifBadge(unread);
+
+            const container = document.getElementById('webNotificationsList');
+            if (!container) return;
+
+            if (!webNotificationsCache.length) {
+                container.innerHTML = '<p class="text-muted text-center my-3 mb-0">You have no notifications.</p>';
+                return;
+            }
+
+            container.innerHTML = webNotificationsCache.map(notification => {
+                const isUnread = !notification.is_read;
+                const timeText = formatReadableTimestamp(notification.created_at);
+                const statusBadge = isUnread
+                    ? '<span class="badge rounded-pill bg-warning text-dark px-2 py-0.5" style="font-size: 10px;">Unread</span>'
+                    : '<span class="badge rounded-pill bg-light text-muted border px-2 py-0.5" style="font-size: 10px;">Read</span>';
+
+                return `<button type="button" class="web-notif-card ${isUnread ? 'is-unread' : 'is-read'}"
+                    onclick="openNotificationTask(${Number(notification.id)}, ${Number(notification.task_id || 0)})">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                        <div class="d-flex align-items-center gap-1.5 min-w-0">
+                            ${isUnread ? '<span class="web-unread-dot"></span>' : ''}
+                            <span class="fw-semibold text-dark small text-truncate">${escapeHtml(notification.title)}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                            ${statusBadge}
+                            <span class="web-notif-time">${escapeHtml(timeText)}</span>
+                        </div>
+                    </div>
+                    <span class="small text-muted d-block">${escapeHtml(notification.message)}</span>
+                </button>`;
+            }).join('');
+        }
+
+        async function markAllWebNotificationsRead() {
+            const unreadItems = webNotificationsCache.filter(n => !n.is_read && n.id);
+            if (!unreadItems.length) return;
+
+            webNotificationsCache = webNotificationsCache.map(n => ({ ...n, is_read: true }));
+            renderWebNotificationsList(webNotificationsCache);
+
+            await Promise.allSettled(
+                unreadItems.map(n => apiFetch(`/api/notifications/${n.id}/read`, { method: 'POST' }))
+            );
         }
 
         async function openNotificationsModal() {
             if (!webNotificationsModal) webNotificationsModal = new bootstrap.Modal(document.getElementById('webNotificationsModal'));
             webNotificationsModal.show();
             const container = document.getElementById('webNotificationsList');
-            container.innerHTML = '<p class="text-muted text-center">Loading notifications...</p>';
+            container.innerHTML = '<p class="text-muted text-center my-3">Loading notifications...</p>';
             try {
                 const response = await apiFetch('/api/notifications');
                 const notifications = await response.json();
                 if (!response.ok) throw new Error(notifications.message || 'Unable to load notifications.');
-                const unread = notifications.filter(notification => !notification.is_read).length;
-                const badge = document.getElementById('notifBadge');
-                badge.textContent = unread;
-                badge.classList.toggle('d-none', unread === 0);
-                container.innerHTML = notifications.length ? notifications.map(notification => `
-                    <button type="button" class="w-100 text-start border-0 border-bottom bg-white py-3 ${notification.is_read ? 'opacity-75' : ''}"
-                        onclick="openNotificationTask(${Number(notification.id)}, ${Number(notification.task_id || 0)})">
-                        <span class="fw-semibold d-block">${escapeHtml(notification.title)}</span>
-                        <span class="small text-muted d-block">${escapeHtml(notification.message)}</span>
-                        <small class="text-muted">${escapeHtml(notification.created_at || '')}</small>
-                    </button>`).join('') : '<p class="text-muted text-center mb-0">You have no notifications.</p>';
+                renderWebNotificationsList(notifications);
             } catch (error) {
-                container.innerHTML = `<p class="text-danger text-center mb-0">${escapeHtml(error.message)}</p>`;
+                container.innerHTML = `<p class="text-danger text-center my-3 mb-0">${escapeHtml(error.message)}</p>`;
             }
         }
 
@@ -582,6 +1038,11 @@
                 if (notificationId) {
                     const response = await apiFetch(`/api/notifications/${notificationId}/read`, { method: 'POST' });
                     if (!response.ok) throw new Error('Unable to mark notification as read.');
+                    webNotificationsCache = webNotificationsCache.map(n =>
+                        Number(n.id) === Number(notificationId) ? { ...n, is_read: true } : n
+                    );
+                    const unreadCount = webNotificationsCache.filter(n => !n.is_read).length;
+                    syncNavbarNotifBadge(unreadCount);
                 }
                 webNotificationsModal?.hide();
                 if (taskId) openTaskDetails(taskId);
@@ -599,9 +1060,7 @@
                     if (response.ok) {
                         const notifications = await response.json();
                         const unread = notifications.filter(notification => !notification.is_read).length;
-                        const badge = document.getElementById('notifBadge');
-                        badge.textContent = unread;
-                        badge.classList.toggle('d-none', unread === 0);
+                        syncNavbarNotifBadge(unread);
                     }
                 } catch (error) {
                     console.error('Unable to load notification count:', error);

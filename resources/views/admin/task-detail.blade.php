@@ -1,144 +1,274 @@
-@extends('layouts.app')
-
-@section('content')
 <style>
-    .adm-detail-container {
-        max-width: 860px;
-        margin: 0 auto;
-        color: #17283a;
-    }
-    .adm-top-nav-strip {
-        background: rgba(18, 24, 31, 0.72);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 16px;
-        padding: 11px 16px;
-    }
-    .adm-surface-card {
-        background: rgba(255, 255, 255, 0.96) !important;
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(226, 232, 240, 0.95) !important;
-        border-radius: 22px !important;
-        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18) !important;
+    .tms-wa-modal .modal-content {
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
         overflow: hidden;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+        background: #ffffff;
     }
-    .adm-accent-line {
-        height: 4px;
-        width: 100%;
-        background: linear-gradient(90deg, #17283a 0%, #e5b72e 55%, #075e54 100%);
+
+    .tms-wa-modal .modal-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 16px 20px;
     }
-    .adm-directive-panel {
+
+    .tms-wa-meta-strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 14px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-left: 4px solid #17283a;
-        border-radius: 14px;
-        padding: 16px 18px;
-        font-size: 14px;
-        line-height: 1.65;
-        min-height: 86px;
-        white-space: pre-line;
+        border-radius: 12px;
+        font-size: 12.5px;
     }
-    .adm-meta-box {
-        background: #ffffff;
+
+    .tms-wa-desc-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #075e54;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 13.5px;
+        color: #111b21;
+    }
+
+    .tms-wa-status-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .wa-chat-zone {
+        background-color: #efeae2;
+        background-image: radial-gradient(rgba(17, 27, 33, 0.055) 1px, transparent 0);
+        background-size: 18px 18px;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
-        padding: 14px 16px;
-        height: 100%;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        padding: 12px;
     }
-    .adm-meta-box:hover {
-        transform: translateY(-2px);
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+
+    .wa-chat-top {
+        background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+        color: #ffffff;
+        border-radius: 11px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 600;
     }
-    .adm-meta-badge-icon {
+
+    .wa-msg-thread {
+        height: 250px;
+        overflow-y: auto;
+        padding: 6px;
+        margin-bottom: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .wa-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 78%;
+    }
+
+    .wa-row.is-mine {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .wa-row.is-other {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .wa-bubble {
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        line-height: 1.42;
+        color: #111b21;
+        box-shadow: 0 1px 2px rgba(11, 20, 26, 0.14);
+        word-break: break-word;
+    }
+
+    .wa-row.is-mine .wa-bubble {
+        background: #d9fdd3;
+        border-top-right-radius: 2px;
+    }
+
+    .wa-row.is-other .wa-bubble {
+        background: #ffffff;
+        border-top-left-radius: 2px;
+    }
+
+    .wa-sender {
+        font-size: 11px;
+        font-weight: 700;
+        color: #075e54;
+        margin-bottom: 2px;
+    }
+
+    .wa-clock {
+        font-size: 10.5px;
+        color: #667781;
+        margin-top: 2px;
+        padding: 0 2px;
+    }
+
+    .wa-send-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .wa-text-pill {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 999px !important;
+        padding: 9px 15px !important;
+        font-size: 13.5px;
+        color: #111b21 !important;
+    }
+
+    .wa-send-btn {
         width: 40px;
         height: 40px;
-        border-radius: 12px;
+        border-radius: 50% !important;
+        background: #008069 !important;
+        border: none !important;
+        color: #ffffff !important;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
         flex-shrink: 0;
-    }
-    .adm-footer-actions {
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        padding: 16px 24px;
     }
 </style>
 
-<div class="container py-3 adm-detail-container">
-    <div class="adm-top-nav-strip d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <a href="/admin/dashboard" class="btn btn-light btn-sm rounded-pill px-3 py-1.5 fw-semibold shadow-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
-        </a>
-        <div class="d-flex align-items-center gap-2">
-            <span class="text-white-50 small d-none d-sm-inline">Task Status:</span>
-            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold" id="detailTaskBadge">Pending</span>
-        </div>
-    </div>
-
-    <div class="card border-0 adm-surface-card mb-4">
-        <div class="adm-accent-line"></div>
-
-        <div class="card-body p-3 p-md-4 p-lg-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4 pb-3 border-bottom">
+<div class="modal fade tms-wa-modal" id="sharedTaskDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-start gap-3">
                 <div>
-                    <span class="badge rounded-pill bg-dark text-white mb-2 px-2.5 py-1" style="font-size: 10.5px; letter-spacing: 0.5px;">
-                        <i class="bi bi-shield-check me-1 text-warning"></i> ADMIN DIRECTIVE
-                    </span>
-                    <h4 class="fw-bold text-dark mb-1" id="detailTaskTitle">Loading Task...</h4>
-                    <small class="text-muted d-inline-flex align-items-center gap-1" id="detailTaskMeta">
-                        <i class="bi bi-clock"></i> Created --
-                    </small>
+                    <h5 class="modal-title fw-bold text-dark mb-0.5" id="sharedModalTitle">Task Title</h5>
+                    <small class="text-muted" id="sharedModalDept">Department</small>
                 </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <div class="mb-4">
-                <label class="form-label small fw-bold text-uppercase text-muted mb-2" style="letter-spacing: 0.6px; font-size: 11px;">
-                    <i class="bi bi-file-earmark-text me-1"></i> Directive Description
-                </label>
-                <div class="adm-directive-panel text-dark" id="detailTaskDesc">...</div>
-            </div>
-
-            <div class="row g-3">
-                <div class="col-12 col-sm-6">
-                    <div class="adm-meta-box d-flex align-items-center gap-3">
-                        <span class="adm-meta-badge-icon bg-primary-subtle text-primary">
-                            <i class="bi bi-person-check-fill"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <small class="text-muted d-block fw-bold" style="font-size: 10.5px; letter-spacing: 0.6px;">ASSIGNED TO</small>
-                            <span class="fw-bold text-dark text-truncate d-block" id="detailAssignedEmp">--</span>
-                        </div>
+            <div class="modal-body p-3 p-md-4 vstack gap-3">
+                <div class="tms-wa-meta-strip">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="badge rounded-pill bg-success text-white px-3 py-1.5" id="sharedModalStatusBadge">Completed</span>
+                        <span class="badge rounded-pill bg-light text-dark border px-3 py-1.5" id="sharedModalPriorityBadge">High priority</span>
+                        <span class="text-muted">Assigned to: <strong class="text-dark" id="sharedModalAssignee">--</strong></span>
                     </div>
+                    <span class="text-muted fw-medium" id="sharedModalDue">Due: --</span>
                 </div>
-                <div class="col-12 col-sm-6">
-                    <div class="adm-meta-box d-flex align-items-center gap-3">
-                        <span class="adm-meta-badge-icon bg-danger-subtle text-danger">
-                            <i class="bi bi-calendar-event-fill"></i>
-                        </span>
-                        <div class="min-w-0">
-                            <small class="text-muted d-block fw-bold" style="font-size: 10.5px; letter-spacing: 0.6px;">DUE DATE</small>
-                            <span class="fw-bold text-danger text-truncate d-block" id="detailDueDate">--</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="adm-footer-actions">
-            <div class="d-flex flex-column flex-sm-row gap-2.5">
-                <button type="button" class="btn btn-app-dark w-100 py-2.5 rounded-3 fw-semibold shadow-sm" onclick="openChatFromDetail()">
-                    <i class="bi bi-chat-dots-fill me-1.5"></i> Open Task Chat
-                </button>
-                <button type="button" class="btn btn-outline-danger w-100 py-2.5 rounded-3 fw-bold bg-white" onclick="deleteTaskFromDetail()">
-                    <i class="bi bi-trash-fill me-1.5"></i> Delete Task
-                </button>
+                <div class="tms-wa-desc-box" id="sharedModalDesc">No description provided.</div>
+
+                <div class="tms-wa-status-bar">
+                    <label for="sharedModalStatusSelect" class="fw-semibold text-dark small mb-0">Update status</label>
+                    <select id="sharedModalStatusSelect" class="form-select form-select-sm bg-white rounded-3" style="max-width: 240px;">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Approval for Completed">Approval for Completed</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                    <button type="button" class="btn btn-dark btn-sm rounded-3 px-3 fw-semibold" id="sharedModalSaveBtn">
+                        Save
+                    </button>
+                </div>
+
+                <div class="wa-chat-zone">
+                    <div class="wa-chat-top">
+                        <span><i class="bi bi-chat-dots-fill me-1.5"></i>Task discussion</span>
+                        <span class="small opacity-75">WhatsApp Theme</span>
+                    </div>
+
+                    <div class="wa-msg-thread" id="sharedChatMessages"></div>
+
+                    <form class="wa-send-bar" id="sharedChatForm">
+                        <input type="text" id="sharedChatInput" class="form-control wa-text-pill" placeholder="Write a message..." required autocomplete="off">
+                        <button type="submit" class="btn wa-send-btn" aria-label="Send message">
+                            <i class="bi bi-send-fill small"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+
+<script>
+    function escapeWaText(str) {
+        if (typeof escapeHtml === 'function') return escapeHtml(String(str ?? ''));
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatWaStamp(isoString) {
+        if (!isoString) return '';
+        const dt = new Date(isoString);
+        if (Number.isNaN(dt.getTime())) return String(isoString);
+        return dt.toLocaleString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function renderWaChatBubbles(comments = [], currentUserId = null, currentUserName = '') {
+        const box = document.getElementById('sharedChatMessages');
+        if (!box) return;
+
+        if (!Array.isArray(comments) || comments.length === 0) {
+            box.innerHTML = '<p class="text-center text-muted small my-auto">No discussion messages yet.</p>';
+            return;
+        }
+
+        const myId = currentUserId ?? localStorage.getItem('user_id');
+        const myName = String(currentUserName || localStorage.getItem('user_name') || '').trim().toLowerCase();
+
+        box.innerHTML = comments.map(c => {
+            const sender = c.user?.name || c.user || c.sender_name || c.user_name || 'User';
+            const isMine = (myId !== null && myId !== '' && c.user_id !== undefined && c.user_id !== null)
+                ? Number(c.user_id) === Number(myId)
+                : Boolean(myName && String(sender).trim().toLowerCase() === myName);
+
+            const body = c.message || c.comment || '';
+            const timeText = formatWaStamp(c.created_at);
+
+            return `
+                <div class="wa-row ${isMine ? 'is-mine' : 'is-other'}">
+                    <div class="wa-bubble">
+                        ${!isMine ? `<div class="wa-sender">${escapeWaText(sender)}</div>` : ''}
+                        <div>${escapeWaText(body)}</div>
+                    </div>
+                    ${timeText ? `<span class="wa-clock">${escapeWaText(timeText)}</span>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        box.scrollTop = box.scrollHeight;
+    }
+</script>
