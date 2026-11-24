@@ -21,6 +21,18 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
 }
 
+/* Status Donut Ring */
+.status-donut-ring {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: conic-gradient(#EFEAE1 0% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.35s ease;
+}
+
 /* Analytics Metric Pill Cards */
 .analytics-metric-card {
     background: rgba(255, 255, 255, 0.95);
@@ -90,6 +102,7 @@
     font-weight: 600; 
     cursor: pointer; 
     transition: all 0.2s; 
+    white-space: nowrap;
 }
 .filter-chip.active { 
     background: #202a33 !important; 
@@ -116,9 +129,9 @@
             </div>
             
             <div class="row align-items-center g-4">
-                <!-- Circular Total Counter Widget -->
+                <!-- Circular Total Counter & Status Donut Widget -->
                 <div class="col-md-auto text-center">
-                    <div class="shadow-sm mx-auto p-1" style="width: 130px; height: 130px; border-radius: 50%; background: conic-gradient(#E2B93B 0% 100%, #EFEAE1 100% 100%); display: flex; align-items: center; justify-content: center;">
+                    <div class="shadow-sm mx-auto p-1 status-donut-ring" id="statDonutChart">
                         <div style="width: 104px; height: 104px; background: #fff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
                             <span class="fw-bold fs-2 text-dark lh-1" id="statOverviewTotal">0</span>
                             <small class="text-muted text-uppercase fw-bold" style="font-size: 9px; letter-spacing: 0.8px; margin-top: 2px;">Total Tasks</small>
@@ -157,6 +170,16 @@
                                 <span class="fw-semibold text-dark" style="font-size: 14px;">Completed</span>
                             </div>
                             <span class="fw-bold badge bg-white text-dark border px-3 py-2 shadow-sm fs-6" id="statCompletedCount">0</span>
+                        </div>
+
+                        <div class="analytics-metric-card d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-danger-subtle text-danger d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 13px;">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </div>
+                                <span class="fw-semibold text-dark" style="font-size: 14px;">Overdue Tasks</span>
+                            </div>
+                            <span class="fw-bold badge bg-white text-danger border px-3 py-2 shadow-sm fs-6" id="statOverdueCount">0</span>
                         </div>
                     </div>
                 </div>
@@ -243,6 +266,7 @@
             <span class="filter-chip shadow-sm" onclick="filterTasks('In Progress', this)">In Progress</span>
             <span class="filter-chip shadow-sm" onclick="filterTasks('Approval for Completed', this)">Awaiting approval</span>
             <span class="filter-chip shadow-sm" onclick="filterTasks('Completed', this)">Completed</span>
+            <span class="filter-chip shadow-sm" onclick="filterTasks('Overdue', this)">Overdue</span>
         </div>
 
         <h6 class="ecl-section-title mb-3 px-1">Tasks & Operations Directory</h6>
@@ -317,23 +341,131 @@
         };
     }
 
+    function getLocalTodayDateStr() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function isTaskOverdue(task) {
+        const status = String(task?.status || '').trim().toLowerCase();
+        if (status === 'completed') return false;
+
+        const dueDateStr = String(task?.due_date || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDateStr)) return false;
+
+        return dueDateStr < getLocalTodayDateStr();
+    }
+
+    function computeStatsFromTasks(tasks) {
+        const list = Array.isArray(tasks) ? tasks : [];
+        const normalize = (val) => String(val || '').trim().toLowerCase();
+
+        return {
+            total: list.length,
+            pending: list.filter(t => normalize(t.status) === 'pending').length,
+            in_progress: list.filter(t => ['in progress', 'in_progress'].includes(normalize(t.status))).length,
+            completed: list.filter(t => normalize(t.status) === 'completed').length,
+            overdue: list.filter(isTaskOverdue).length,
+        };
+    }
+
+    function updateStatusDonutGraph(stats) {
+        const donutEl = document.getElementById('statDonutChart');
+        if (!donutEl) return;
+
+        const pending = Math.max(0, Number(stats?.pending) || 0);
+        const inProgress = Math.max(0, Number(stats?.in_progress) || 0);
+        const completed = Math.max(0, Number(stats?.completed) || 0);
+        const overdue = Math.max(0, Number(stats?.overdue) || 0);
+
+        const activeOpen = Math.max(0, pending + inProgress);
+        const effectiveOverdue = Math.min(overdue, activeOpen);
+        const remainingOpen = Math.max(0, activeOpen - effectiveOverdue);
+
+        const openRatio = activeOpen > 0 ? remainingOpen / activeOpen : 0;
+        const onTimePending = pending * openRatio;
+        const onTimeInProgress = inProgress * openRatio;
+
+        const sum = onTimePending + onTimeInProgress + completed + effectiveOverdue;
+        if (sum <= 0) {
+            donutEl.style.background = 'conic-gradient(#EFEAE1 0% 100%)';
+            return;
+        }
+
+        const pPct = (onTimePending / sum) * 100;
+        const ipPct = (onTimeInProgress / sum) * 100;
+        const cPct = (completed / sum) * 100;
+        const oPct = (effectiveOverdue / sum) * 100;
+
+        const s1 = pPct;
+        const s2 = s1 + ipPct;
+        const s3 = s2 + cPct;
+        const s4 = Math.min(100, s3 + oPct);
+
+        donutEl.style.background = `conic-gradient(
+            #eab308 0% ${s1}%,
+            #0d6efd ${s1}% ${s2}%,
+            #198754 ${s2}% ${s3}%,
+            #dc3545 ${s3}% ${s4}%,
+            #EFEAE1 ${s4}% 100%
+        )`;
+    }
+
+    function applyDashboardStats(stats, fallbackTasks = null) {
+        const fallback = Array.isArray(fallbackTasks) ? computeStatsFromTasks(fallbackTasks) : null;
+        const rawTotal = stats?.total;
+        const hasApiStats = rawTotal !== undefined && rawTotal !== null && Number(rawTotal) > 0;
+
+        const finalStats = hasApiStats
+            ? {
+                total: Number(stats.total) || 0,
+                pending: Number(stats.pending) || 0,
+                in_progress: Number(stats.in_progress) || 0,
+                completed: Number(stats.completed) || 0,
+                overdue: Number(stats.overdue ?? fallback?.overdue ?? 0) || 0,
+            }
+            : (fallback || {
+                total: Number(stats?.total) || 0,
+                pending: Number(stats?.pending) || 0,
+                in_progress: Number(stats?.in_progress) || 0,
+                completed: Number(stats?.completed) || 0,
+                overdue: Number(stats?.overdue) || 0,
+            });
+
+        document.getElementById('statOverviewTotal').textContent = finalStats.total;
+        document.getElementById('statPendingCount').textContent = finalStats.pending;
+        document.getElementById('statInProgressCount').textContent = finalStats.in_progress;
+        document.getElementById('statCompletedCount').textContent = finalStats.completed;
+
+        const overdueEl = document.getElementById('statOverdueCount');
+        if (overdueEl) {
+            overdueEl.textContent = finalStats.overdue;
+        }
+
+        updateStatusDonutGraph(finalStats);
+    }
+
     async function fetchDashboardStats() {
         try {
             const res = await apiFetch('/api/dashboard');
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Unable to load dashboard statistics.');
-            const stats = data.stats || {};
-            document.getElementById('statOverviewTotal').textContent = stats.total || 0;
-            document.getElementById('statPendingCount').textContent = stats.pending || 0;
-            document.getElementById('statInProgressCount').textContent = stats.in_progress || 0;
-            document.getElementById('statCompletedCount').textContent = stats.completed || 0;
-            
+
+            const stats = data.stats || data.data?.stats || data.data || {};
+            applyDashboardStats(stats, allTasks.length ? allTasks : null);
+
             if (data.active_workforce !== undefined) {
                 document.getElementById('statTeamTotal').textContent = data.active_workforce;
             }
             document.getElementById('statDeptsTotal').textContent = (data.tasks_by_department || []).length;
         } catch (err) {
             console.error('Error fetching dashboard stats:', err);
+            if (allTasks.length) {
+                applyDashboardStats(null, allTasks);
+            }
         }
     }
 
@@ -342,7 +474,8 @@
             const res = await apiFetch('/api/tasks');
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Unable to load tasks.');
-            allTasks = Array.isArray(data) ? data : (data.tasks || []);
+            allTasks = Array.isArray(data) ? data : (data.tasks || data.data || []);
+            applyDashboardStats(null, allTasks);
             renderTaskList(filterVisibleTasks());
         } catch (err) {
             document.getElementById('taskListContainer').innerHTML = `<p class="alert alert-danger">${escapeHtml(err.message)}</p>`;
@@ -358,22 +491,26 @@
 
         container.innerHTML = tasks.map(t => {
             const statusText = t.status || 'Pending';
+            const overdue = isTaskOverdue(t);
             const badgeClass = statusText === 'Completed' ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
                 : statusText === 'In Progress' ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'
                 : statusText === 'Approval for Completed' ? 'bg-info-subtle text-info-emphasis border border-info-subtle'
                 : 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
             return `
                 <button type="button" class="card text-start border-0 shadow-sm mb-3 p-3 rounded-4 bg-white w-100" onclick="openTaskDetails(${Number(t.id)})">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
                         <div>
                             <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">${escapeHtml(t.title)}</h6>
                             <p class="text-muted mb-2 small" style="font-size: 12.5px;">${escapeHtml(t.description || 'No description provided.')}</p>
                         </div>
-                        <span class="badge ${badgeClass} px-3 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">${escapeHtml(statusText)}</span>
+                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                            ${overdue ? `<span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-2.5 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">Overdue</span>` : ''}
+                            <span class="badge ${badgeClass} px-3 py-1 rounded-pill" style="font-size: 11px; font-weight: 600;">${escapeHtml(statusText)}</span>
+                        </div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center text-muted pt-2.5 border-top mt-2" style="font-size: 12px;">
                         <span><i class="bi bi-person-fill me-1 text-dark"></i>${escapeHtml(t.assigned_employee || 'Unassigned')}</span>
-                        <span><i class="bi bi-calendar-event me-1 text-warning"></i>${escapeHtml(t.due_date || 'No deadline')}</span>
+                        <span><i class="bi bi-calendar-event me-1 ${overdue ? 'text-danger' : 'text-warning'}"></i>${escapeHtml(t.due_date || 'No deadline')}</span>
                     </div>
                 </button>
             `;
@@ -391,7 +528,10 @@
     function filterVisibleTasks(query = (document.getElementById('searchInput')?.value || '').toLowerCase()) {
         return allTasks.filter(task => {
             const matchesQuery = `${task.title || ''} ${task.description || ''}`.toLowerCase().includes(query);
-            return matchesQuery && (currentFilter === 'all' || task.status === currentFilter);
+            if (!matchesQuery) return false;
+            if (currentFilter === 'all') return true;
+            if (currentFilter === 'Overdue') return isTaskOverdue(task);
+            return task.status === currentFilter;
         });
     }
 
