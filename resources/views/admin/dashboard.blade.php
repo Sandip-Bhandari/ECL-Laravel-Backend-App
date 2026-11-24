@@ -300,7 +300,7 @@
     color: #ffffff !important;
     border: 1px solid rgba(229, 183, 46, 0.35) !important;
     border-radius: 14px !important;
-    padding: 13px 18px !important;
+    padding: 13px 16px !important;
     font-size: 13.5px !important;
     font-weight: 600 !important;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18) !important;
@@ -319,7 +319,7 @@
     color: #0f172a !important;
     border: 1px solid rgba(226, 232, 240, 0.95) !important;
     border-radius: 14px !important;
-    padding: 13px 18px !important;
+    padding: 13px 16px !important;
     font-size: 13.5px !important;
     font-weight: 600 !important;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1) !important;
@@ -332,6 +332,24 @@
     color: #0f172a !important;
     border-color: #e5b72e !important;
     box-shadow: 0 12px 26px rgba(15, 23, 42, 0.15) !important;
+}
+
+.team-action-broadcast {
+    background: linear-gradient(135deg, #e5b72e 0%, #c99916 100%) !important;
+    color: #12181f !important;
+    border: 1px solid rgba(255, 255, 255, 0.45) !important;
+    border-radius: 14px !important;
+    padding: 13px 16px !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(229, 183, 46, 0.25) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.team-action-broadcast:hover {
+    transform: translateY(-2px);
+    color: #12181f !important;
+    box-shadow: 0 12px 26px rgba(229, 183, 46, 0.38) !important;
 }
 
 .ecl-tms-page .card.team-member-card {
@@ -389,6 +407,84 @@
     align-items: center;
     justify-content: center;
     padding: 0;
+}
+
+/* Polished Broadcast Modal Styling */
+#modalBroadcast .modal-content {
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 26px 64px rgba(15, 23, 42, 0.32);
+}
+
+.tms-broadcast-top-bar {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #12181f 0%, #e5b72e 55%, #075e54 100%);
+}
+
+#modalBroadcast .modal-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 15px 20px;
+}
+
+.tms-broadcast-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #fef3c7;
+    color: #b45309;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+#modalBroadcast .modal-body {
+    padding: 20px;
+    background: #ffffff;
+}
+
+#modalBroadcast .app-input {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 13px;
+    font-size: 13.5px;
+    color: #0f172a;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+#modalBroadcast .app-input:focus {
+    background: #ffffff;
+    border-color: #e5b72e;
+    box-shadow: 0 0 0 3px rgba(229, 183, 46, 0.2);
+}
+
+.tms-broadcast-scope-note {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 12px;
+}
+
+.btn-app-dark {
+    background: linear-gradient(135deg, #12181f 0%, #24303d 100%);
+    color: #ffffff;
+    border: 1px solid rgba(229, 183, 46, 0.4);
+    border-radius: 12px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+
+.btn-app-dark:hover {
+    color: #ffe89e;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.22);
 }
 </style>
 
@@ -584,16 +680,22 @@
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <button type="button" class="btn team-action-primary w-100 d-flex align-items-center justify-content-center gap-2" onclick="openAddEmployeeModal()">
                     <i class="bi bi-person-plus-fill text-warning"></i>
                     <span>Add Employee</span>
                 </button>
             </div>
-            <div class="col-sm-6">
+            <div class="col-md-4 col-sm-6">
                 <button type="button" class="btn team-action-secondary w-100 d-flex align-items-center justify-content-center gap-2" onclick="openAddDeptModal()">
                     <i class="bi bi-building-add text-warning"></i>
                     <span>New Dept</span>
+                </button>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <button type="button" class="btn team-action-broadcast w-100 d-flex align-items-center justify-content-center gap-2" onclick="openBroadcastModal()">
+                    <i class="bi bi-megaphone-fill"></i>
+                    <span>Broadcast Notice</span>
                 </button>
             </div>
         </div>
@@ -603,6 +705,57 @@
             <p class="text-center text-muted my-5 py-5 bg-white rounded-4 border shadow-sm">Loading team members...</p>
         </div>
     </div>
+
+    <!-- Broadcast Notice Modal (Scoped to Current Admin's Team) -->
+    <div class="modal fade" id="modalBroadcast" tabindex="-1" aria-labelledby="modalBroadcastTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="tms-broadcast-top-bar"></div>
+                <div class="modal-header d-flex justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2.5 min-w-0">
+                        <span class="tms-broadcast-icon-box">
+                            <i class="bi bi-megaphone-fill"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <h5 class="modal-title fw-bold text-dark m-0" id="modalBroadcastTitle" style="font-size: 16px;">Publish Notice Broadcast</h5>
+                            <small class="text-muted d-block text-truncate" style="font-size: 11.5px;">Send announcement only to your added team members</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="broadcastForm" class="vstack gap-3">
+                        <div class="tms-broadcast-scope-note d-flex align-items-center justify-content-between gap-2">
+                            <span><i class="bi bi-shield-lock-fill me-1.5"></i>Scoped to your managed team</span>
+                            <span class="badge rounded-pill bg-warning text-dark" id="modalBroadcastTeamCount">0 Members</span>
+                        </div>
+
+                        <div>
+                            <label for="broadcastHeading" class="form-label small fw-bold text-dark mb-1">Notice Heading</label>
+                            <input type="text" id="broadcastHeading" class="form-control app-input" maxlength="160" placeholder="e.g. Mandatory Safety Briefing" required>
+                        </div>
+
+                        <div>
+                            <label for="broadcastTarget" class="form-label small fw-bold text-dark mb-1">Target Audience (Within Your Team)</label>
+                            <select id="broadcastTarget" class="form-select app-input">
+                                <option value="all">All My Team Members</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="broadcastContent" class="form-label small fw-bold text-dark mb-1">Announcement Content</label>
+                            <textarea id="broadcastContent" class="form-control app-input" rows="3" maxlength="2000" placeholder="Type notice details..." required></textarea>
+                        </div>
+
+                        <button type="submit" id="broadcastSubmitBtn" class="btn btn-app-dark w-100 py-2.5 fw-bold mt-1">
+                            <i class="bi bi-send-fill me-1.5 text-warning"></i>Publish Notice
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @include('components.modal-add-employee')
     @include('components.modal-add-dept')
 </div>
@@ -614,6 +767,7 @@
     let allTasks = [];
     let allEmployees = [];
     let currentFilter = 'all';
+    let webBroadcastModal;
 
     document.addEventListener('DOMContentLoaded', async () => {
         const token = localStorage.getItem('auth_token');
@@ -859,6 +1013,40 @@
         renderTaskList(filterVisibleTasks());
     }
 
+    function syncBroadcastTeamCount() {
+        const activeCount = (Array.isArray(allEmployees) ? allEmployees : [])
+            .filter(emp => emp.status !== 'inactive').length;
+        const badge = document.getElementById('modalBroadcastTeamCount');
+        if (badge) {
+            badge.textContent = `${activeCount} Members`;
+        }
+    }
+
+    function populateBroadcastTargetUsers() {
+        const selectEl = document.getElementById('broadcastTarget');
+        if (!selectEl) return;
+
+        const previousValue = selectEl.value || 'all';
+        const members = (Array.isArray(allEmployees) ? allEmployees : [])
+            .filter(emp => emp.status !== 'inactive');
+
+        const allOptionText = members.length
+            ? `All My Team Members (${members.length})`
+            : 'All My Team Members';
+
+        const userOptionsHtml = members.map(emp => {
+            const name = escapeHtml(emp.name || 'Member');
+            const meta = [emp.designation, emp.department].filter(Boolean).map(escapeHtml).join(' • ');
+            const label = meta ? `${name} (${meta})` : name;
+            return `<option value="${Number(emp.id)}">${label}</option>`;
+        }).join('');
+
+        selectEl.innerHTML = `<option value="all">${allOptionText}</option>${userOptionsHtml}`;
+
+        const hasPrevious = [...selectEl.options].some(opt => opt.value === previousValue);
+        selectEl.value = hasPrevious ? previousValue : 'all';
+    }
+
     async function fetchEmployees() {
         try {
             const res = await apiFetch('/api/employees');
@@ -866,6 +1054,8 @@
             if (!res.ok) throw new Error(data.message || 'Unable to load team members.');
             allEmployees = Array.isArray(data) ? data : (data.employees || []);
             document.getElementById('statTeamTotal').textContent = allEmployees.length;
+            syncBroadcastTeamCount();
+            populateBroadcastTargetUsers();
             renderEmployeeList(allEmployees);
         } catch (err) {
             document.getElementById('employeeListContainer').innerHTML = `<p class="alert alert-danger">${escapeHtml(err.message)}</p>`;
@@ -937,6 +1127,57 @@
     function openAddDeptModal() {
         new bootstrap.Modal(document.getElementById('addDeptModal')).show();
     }
+
+    function openBroadcastModal() {
+        syncBroadcastTeamCount();
+        populateBroadcastTargetUsers();
+        if (!webBroadcastModal) {
+            webBroadcastModal = new bootstrap.Modal(document.getElementById('modalBroadcast'));
+        }
+        webBroadcastModal.show();
+    }
+
+    document.getElementById('broadcastForm')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const headingEl = document.getElementById('broadcastHeading');
+        const targetEl = document.getElementById('broadcastTarget');
+        const contentEl = document.getElementById('broadcastContent');
+        const submitBtn = document.getElementById('broadcastSubmitBtn');
+
+        const title = headingEl.value.trim();
+        const message = contentEl.value.trim();
+        const selectedTarget = targetEl?.value || 'all';
+        const isSpecificUser = selectedTarget !== 'all';
+
+        const payload = {
+            title,
+            audience: isSpecificUser ? 'specific_user' : 'all',
+            target_user_id: isSpecificUser ? Number(selectedTarget) : null,
+            message
+        };
+
+        if (!title || !message) return;
+
+        submitBtn.disabled = true;
+        try {
+            const res = await apiFetch('/api/admin/team/broadcast', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Unable to publish notice.');
+
+            headingEl.value = '';
+            contentEl.value = '';
+            targetEl.value = 'all';
+            webBroadcastModal?.hide();
+            window.alert(data.message || 'Notice published.');
+        } catch (err) {
+            window.alert(err.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
+    });
 
     async function loadEmployeeDepartments() {
         const select = document.getElementById('empDeptSelect');
